@@ -1,0 +1,2594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 연간계약보드 - 공공요금·연간계약 현황 관리 보드</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#3182f6;--blue-lt:#ebf3ff;--blue-dk:#1b64da;
+  --bg:#f5f5f7;--card:#fff;--border:#e5e7eb;--border2:#f0f0f0;
+  --text:#191f28;--t2:#6b7684;--t3:#adb5bd;
+  --green:#05c072;--green-lt:#e8faf3;
+  --red:#ef4444;--red-lt:#fee2e2;
+  --orange:#f97316;--orange-lt:#fff7ed;
+  --amber:#d97706;--amber-lt:#fef3c7;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --yellow-bg:#fefce8;--yellow-tx:#a16207;
+  --slate:#475569;--slate-lt:#f1f5f9;
+  --r:12px;--rs:8px;--rx:6px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;font-size:14px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+
+/* ── HEADER ── */
+.hdr{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;position:sticky;top:0;z-index:100}
+.hdr-in{max-width:1440px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:10px 0;flex-wrap:wrap}
+.hdr-brand{flex:1;min-width:180px}
+.hdr-brand h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.hdr-brand p{font-size:11px;color:var(--t2);margin-top:1px}
+.hdr-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.hdr-main-acts,.hdr-sub-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.hdr-sub-acts{padding-left:8px;border-left:1px solid var(--border)}
+.btn-subtle{background:#f8f9fa;color:var(--t2)}
+.btn-subtle:hover{background:#f1f3f5;color:var(--text)}
+.hdr-brand-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.version-badge{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:999px;background:var(--slate-lt);border:1px solid var(--border);color:var(--slate);font-size:11px;font-weight:600;letter-spacing:-.1px;white-space:nowrap}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rs);border:1px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit;line-height:1}
+.btn:hover{background:#f8f9fa}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dk);border-color:var(--blue-dk)}
+.btn-success{background:var(--green-lt);border-color:#86efac;color:#065f46}
+.btn-success:hover{background:#d1fae5}
+.btn-excel{background:var(--green-lt);border-color:#b7f0d1;color:#087f5b}
+.btn-excel:hover{background:#dff8ec;border-color:#8ce6b8;color:#066846}
+.btn-danger{background:var(--red-lt);border-color:#fca5a5;color:var(--red)}
+.btn-danger:hover{background:#fecaca}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* ── COMPACT HELP / FILTERS ── */
+.btn-github{background:#fff;color:var(--slate);text-decoration:none}
+.btn-github:hover{background:#f8f9fa;color:var(--text)}
+.app-footer{max-width:1440px;margin:0 auto;padding:16px 20px 26px;color:var(--t2);font-size:12px;text-align:center}
+.app-footer b{color:var(--text);font-weight:600}
+.footer-help{margin-top:4px;color:var(--t3);font-size:11.5px}
+.filter-toggle{border-style:dashed}
+.filter-toggle.on{background:var(--blue-lt);border-color:var(--blue);color:var(--blue);font-weight:700}
+.detail-filter-panel{display:none;margin-top:8px;padding:10px 10px 9px;border:1px solid var(--border);border-radius:var(--rs);background:#fbfcfd}
+.detail-filter-panel.open{display:block}
+.detail-filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.detail-filter-row + .detail-filter-row{margin-top:7px}
+.detail-filter-row .chips{flex:0 1 auto}
+.detail-sort{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.detail-sort .sort-sel{height:32px;min-width:170px}
+.quick-sort{margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.quick-sort .sort-sel{height:34px;min-width:150px}
+.quick-sort .view-note{padding:6px 10px}
+
+/* ── MAIN ── */
+.main{max-width:1440px;margin:0 auto;padding:16px 20px}
+
+/* ── SCHOOL INFO BAR ── */
+.school-bar{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.school-bar label{font-size:12px;color:var(--t2);font-weight:600;white-space:nowrap}
+.school-bar input{border:1px solid var(--border);border-radius:var(--rx);padding:5px 9px;font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s}
+.school-bar input:focus{border-color:var(--blue)}
+.school-bar .last-upd{margin-left:auto;font-size:11px;color:var(--t3)}
+
+/* ── DASHBOARD ── */
+.dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s;position:relative}
+.stat:hover{border-color:var(--blue);background:var(--blue-lt)}
+.stat.active{border-color:var(--blue);background:var(--blue-lt)}
+.stat-lbl{font-size:11px;color:var(--t2);font-weight:600;margin-bottom:6px}
+.stat-val{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.stat-unit{font-size:13px;font-weight:400;color:var(--t2)}
+.stat.c-blue .stat-val{color:var(--blue)}
+.stat.c-green .stat-val{color:var(--green)}
+.stat.c-red .stat-val{color:var(--red)}
+.stat.c-amber .stat-val{color:var(--amber)}
+.stat.c-purple .stat-val{color:var(--purple)}
+.stat.c-slate .stat-val{color:var(--slate)}
+
+/* ── CONTROLS ── */
+.ctrl{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.search-row{display:flex;gap:8px;margin-bottom:10px}
+.search-wrap{flex:1;position:relative}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none;display:flex}
+.search-inp{width:100%;padding:8px 32px 8px 34px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s}
+.search-inp:focus{border-color:var(--blue)}
+.search-clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t3);font-size:15px;line-height:1;display:none;padding:2px}
+.search-clr.on{display:block}
+.search-clr:hover{color:var(--text)}
+.filter-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filter-row + .filter-row{margin-top:8px}
+.filter-lbl{font-size:12px;color:var(--t2);font-weight:600;white-space:nowrap}
+.sort-wrap{display:flex;align-items:center;gap:7px;min-width:250px}
+.sort-sel{height:37px;padding:0 34px 0 12px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-weight:500;color:var(--text);background:#fff;font-family:inherit;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 5.25L7 8.25L10 5.25' fill='none' stroke='%236b7684' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;background-size:14px 14px}
+.sort-sel:focus{border-color:var(--blue)}
+.view-note{font-size:12px;color:var(--t2);background:#f8f9fa;border:1px solid var(--border);border-radius:100px;padding:5px 10px;white-space:nowrap}
+.chips{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.chip{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:#fff;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+.chip.on{background:var(--blue-lt);border-color:var(--blue);color:var(--blue);font-weight:700}
+.chip[data-f="all"].on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip.c-red.on{background:var(--red-lt);border-color:#fca5a5;color:var(--red)}
+.chip.c-amber.on{background:var(--amber-lt);border-color:#fcd34d;color:var(--amber)}
+.chip.c-orange.on{background:var(--orange-lt);border-color:#fdba74;color:var(--orange)}
+.chip-rst{color:var(--t3);border-style:dashed}
+
+/* ── LIST SECTION ── */
+.list-sec{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.list-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;background:#fff;border-radius:var(--r) var(--r) 0 0;position:relative;z-index:3}
+.list-hdr h2{font-size:14px;font-weight:700}
+.list-cnt{font-size:13px;color:var(--t2)}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow:auto;max-height:calc(100vh - 220px);min-height:260px;position:relative;background:#fff}
+.ctbl{width:100%;border-collapse:collapse;min-width:920px}
+.ctbl thead{position:sticky;top:0;z-index:8}.ctbl th{background:#f8f9fa;border-bottom:1px solid var(--border);padding:9px 11px;text-align:left;font-size:11px;font-weight:700;color:var(--t2);white-space:nowrap;cursor:pointer;user-select:none;position:relative;z-index:8}.ctbl thead::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--border);pointer-events:none}
+.ctbl th:hover{color:var(--text)}
+.ctbl th.sort-asc::after{content:' ↑'}
+.ctbl th.sort-desc::after{content:' ↓'}
+.ctbl td{border-bottom:1px solid var(--border2);padding:10px 11px;font-size:13px;vertical-align:middle}
+.ctbl tr:last-child td{border-bottom:none}
+.ctbl tbody tr:hover td{background:#f8f9fa;cursor:pointer}
+.ctbl .tr-exp td{background:#fff8f8}
+.ctbl .tr-exp:hover td{background:#fee2e2}
+.ctbl .tr-90 td{background:#fffbeb}
+.ctbl .tr-90:hover td{background:#fef3c7}
+.name-cell{font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trunc{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── BADGES ── */
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;white-space:nowrap;line-height:1.4}
+.bdg-exp{background:var(--red-lt);color:var(--red)}
+.bdg-30{background:var(--red-lt);color:var(--red)}
+.bdg-60{background:var(--orange-lt);color:var(--orange)}
+.bdg-90{background:var(--amber-lt);color:var(--amber)}
+.bdg-ok{background:#f3f4f6;color:#9ca3af;border:1px solid #e5e7eb}
+.bdg-none{background:#f3f4f6;color:#9ca3af}
+.bdg-pub{background:#e8faf3;color:#008c5a}
+.bdg-ann{background:#f1f5f9;color:#475569}
+.bdg-auto{background:var(--purple-lt);color:var(--purple)}
+.bdg-memo{background:var(--yellow-bg);color:var(--yellow-tx)}
+
+/* ── MOBILE CARDS ── */
+.m-cards{display:none}
+.m-card{border-bottom:1px solid var(--border);padding:12px 14px;cursor:pointer;transition:background .1s}
+.m-card:last-child{border-bottom:none}
+.m-card:hover{background:#f8f9fa}
+.mc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.mc-name{font-size:14px;font-weight:700;flex:1;margin-right:8px;word-break:break-word}
+.mc-bdgs{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
+.mc-vendor{font-size:12px;color:var(--t2);margin-bottom:4px}
+.mc-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--t2)}
+.mc-ml{color:var(--t3)}
+.mc-mv{font-weight:500;color:var(--t2)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:56px 20px}
+.empty-ico{font-size:44px;margin-bottom:14px}
+.empty h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.empty p{font-size:13px;color:var(--t2);margin-bottom:18px}
+.empty-steps{max-width:520px;margin:0 auto 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:left}
+.empty-step{background:#fff;border:1px solid var(--border);border-radius:var(--rs);padding:10px}
+.empty-step b{display:block;font-size:12px;color:var(--text);margin-bottom:3px}
+.empty-step span{font-size:11px;color:var(--t2);line-height:1.45}
+.empty-tip{max-width:520px;margin:10px auto 0;padding:9px 11px;border-radius:var(--rs);background:#f8f9fa;color:var(--t2);font-size:11px;line-height:1.55}
+
+/* ── MODAL ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.ov.on{display:flex}
+.modal{background:#fff;border-radius:var(--r);width:100%;max-width:700px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.modal.sm{max-width:420px}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-hdr h3{font-size:15px;font-weight:700}
+.modal-cls{background:none;border:none;cursor:pointer;font-size:18px;color:var(--t2);padding:3px;line-height:1}
+.modal-cls:hover{color:var(--text)}
+.modal-body{overflow-y:auto;padding:18px;flex:1}
+.modal-ftr{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-top:1px solid var(--border);gap:8px;flex-shrink:0}
+.mf-l{display:flex;gap:6px}
+.mf-r{display:flex;gap:6px}
+
+/* ── FORM ── */
+.f-sec{margin-bottom:18px}
+.f-sec-ttl{font-size:12px;font-weight:700;color:var(--t2);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.3px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:12px;font-weight:600;color:var(--t2)}
+.fg .req{color:var(--red)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid1{display:grid;grid-template-columns:1fr;gap:10px}
+.sp2{grid-column:span 2}
+.sp3{grid-column:span 3}
+.fc{padding:8px 11px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s;background:#fff;width:100%}
+select.fc{appearance:none;-webkit-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 5.25L7 8.25L10 5.25' fill='none' stroke='%236b7684' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;background-size:14px 14px}
+.fc:focus{border-color:var(--blue)}
+textarea.fc{resize:vertical;min-height:72px}
+.fhint{font-size:11px;color:var(--t3)}
+.period-preview{margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);background:#f8fafc;color:var(--t2);font-size:13px}
+.period-preview strong{color:var(--text);font-weight:700}
+
+/* ── DETAIL VIEW ── */
+.dv-badges{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.dv-stitle{font-size:12px;font-weight:700;color:var(--t2);padding:12px 0 7px;border-bottom:1px solid var(--border);margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px}
+.dv-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2);align-items:flex-start}
+.dv-row:last-child{border-bottom:none}
+.dv-lbl{font-size:12px;color:var(--t2);font-weight:600;min-width:110px;padding-top:1px;flex-shrink:0}
+.dv-val{font-size:13px;color:var(--text);flex:1;word-break:break-word}
+.note-box{background:#f8f9fa;border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--t2);white-space:pre-wrap;word-break:break-word;margin-top:4px}
+.memo-box{background:var(--blue-lt);border:1px solid #bfdbfe;border-radius:var(--rs);padding:10px 12px;font-size:13px;color:#1e40af;white-space:pre-wrap;word-break:break-word;margin-top:4px}
+.no-data{color:var(--t3);font-size:13px;padding:8px 0}
+
+/* ── CONFIRM MODAL ── */
+.conf-body{padding:24px 18px;text-align:center}
+.conf-ico{font-size:36px;margin-bottom:10px}
+.conf-ttl{font-size:16px;font-weight:700;margin-bottom:6px}
+.conf-msg{font-size:13px;color:var(--t2);line-height:1.65;white-space:pre-wrap}
+.conf-ftr{justify-content:center;gap:8px;flex-wrap:wrap}
+
+/* ── TOAST ── */
+.toasts{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:6px}
+.toast{background:#1f2937;color:#fff;padding:11px 15px;border-radius:var(--rs);font-size:13px;font-weight:500;max-width:300px;animation:slideUp .2s ease}
+.toast.ok{background:#065f46}
+.toast.err{background:#991b1b}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── LOADING ── */
+.loading{position:fixed;inset:0;background:rgba(255,255,255,.75);z-index:400;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.loading.on{display:flex}
+.spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .hdr-acts{width:100%}
+  .btn{padding:6px 10px;font-size:12px}
+  .dash{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+  .stat{padding:12px}
+  .stat-val{font-size:20px}
+  .search-row{flex-direction:column}
+  .sort-wrap{width:100%;min-width:0}
+  .sort-sel{flex:1;width:100%}
+}
+@media(max-width:768px){
+  .main{padding:12px}
+  .tbl-wrap{display:none}
+  .m-cards{display:block}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .sp2,.sp3{grid-column:span 1}
+  .list-hdr{position:static}
+  .ctbl th{position:static}
+  .modal{max-height:100vh;border-radius:var(--r) var(--r) 0 0}
+  .ov{padding:0;align-items:flex-end}
+}
+@media(max-width:480px){
+  .empty-steps{grid-template-columns:1fr}
+  .hdr-brand h1{font-size:15px}
+  .version-badge{height:19px;padding:0 7px;font-size:10.5px}
+  .chips{gap:4px}
+  .chip{padding:3px 8px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading" id="ldg"><div class="spinner"></div><div style="font-size:13px;color:var(--t2)">처리 중...</div></div>
+
+<!-- Toasts -->
+<div class="toasts" id="toasts"></div>
+
+<!-- Header -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="hdr-brand">
+      <div class="hdr-brand-line">
+        <h1>📅 연간계약보드</h1>
+        <span class="version-badge" title="현재 배포 버전">v1.1</span>
+      </div>
+      <p>공공요금·연간계약 현황 관리 보드 · 외부 전송 없음</p>
+    </div>
+    <div class="hdr-acts">
+      <div class="hdr-main-acts">
+        <button class="btn btn-primary" onclick="triggerExcelInput()" title="기존 엑셀 계약현황표를 불러옵니다.">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          엑셀 불러오기
+        </button>
+        <button class="btn" onclick="openAdd()" title="엑셀 없이 계약을 직접 추가합니다.">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          계약 추가
+        </button>
+      </div>
+      <div class="hdr-sub-acts">
+        <button class="btn btn-excel" onclick="exportExcel()" title="사람이 열어보는 업무용 엑셀 파일로 저장합니다.">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          엑셀 내보내기
+        </button>
+        <button class="btn btn-subtle" onclick="doBackup()" title="현재 앱 상태를 백업 파일로 저장합니다. 나중에 ‘백업 불러오기’로 복원할 수 있어요.">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          백업 저장
+        </button>
+        <button class="btn btn-subtle" onclick="triggerRestoreInput()" title="저장해둔 백업 파일로 앱 상태를 다시 불러옵니다.">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+          백업 불러오기
+        </button>
+        <button class="btn btn-danger" onclick="doReset()" title="현재 브라우저에 저장된 계약현황을 삭제합니다.">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          전체 초기화
+        </button>
+        <a class="btn btn-subtle btn-github" href="https://github.com/sen-vip/annual-contract-board" target="_blank" rel="noopener noreferrer" title="GitHub 저장소를 새 창으로 엽니다.">
+          GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<!-- Hidden Inputs -->
+<input type="file" id="xlsxInp" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcel(event)">
+<input type="file" id="bakInp" accept=".bak,.json" style="display:none" onchange="handleRestore(event)">
+
+<!-- Main -->
+<div class="main">
+
+  <!-- School Info Bar -->
+  <div class="school-bar">
+    <label>학교명</label>
+    <input type="text" id="schoolName" placeholder="○○초등학교" style="width:180px" oninput="saveSchoolInfo()">
+    <label style="margin-left:8px">학년도</label>
+    <input type="text" id="schoolYear" placeholder="2026학년도" style="width:110px" oninput="saveSchoolInfo()">
+    <span class="last-upd" id="lastUpd"></span>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dash" id="dash">
+    <div class="stat" onclick="setFilter('all')" data-stat="all">
+      <div class="stat-lbl">총 계약 건수</div>
+      <div class="stat-val"><span id="sTotal">0</span><span class="stat-unit"> 건</span></div>
+    </div>
+    <div class="stat c-green" onclick="setFilter('공공요금')" data-stat="공공요금">
+      <div class="stat-lbl">공공요금</div>
+      <div class="stat-val"><span id="sPub">0</span><span class="stat-unit"> 건</span></div>
+    </div>
+    <div class="stat c-slate" onclick="setFilter('연간계약')" data-stat="연간계약">
+      <div class="stat-lbl">연간계약</div>
+      <div class="stat-val"><span id="sAnn">0</span><span class="stat-unit"> 건</span></div>
+    </div>
+    <div class="stat c-purple" onclick="setFilter('자동이체')" data-stat="자동이체">
+      <div class="stat-lbl">자동이체</div>
+      <div class="stat-val"><span id="sAuto">0</span><span class="stat-unit"> 건</span></div>
+    </div>
+    <div class="stat c-amber" onclick="setFilter('90일')" data-stat="90일">
+      <div class="stat-lbl">90일 이내 만료</div>
+      <div class="stat-val"><span id="s90">0</span><span class="stat-unit"> 건</span></div>
+    </div>
+    <div class="stat c-red" onclick="setFilter('종료됨')" data-stat="종료됨">
+      <div class="stat-lbl">종료됨</div>
+      <div class="stat-val"><span id="sExp">0</span><span class="stat-unit"> 건</span></div>
+    </div>
+    <div class="stat" onclick="setFilter('메모')" data-stat="메모">
+      <div class="stat-lbl">메모 있음</div>
+      <div class="stat-val"><span id="sMemo">0</span><span class="stat-unit"> 건</span></div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="ctrl">
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-ico">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" id="srchInp" class="search-inp" placeholder="계약명, 업체, 증빙구분, 메모 등 검색..." oninput="handleSearch(this.value)">
+        <button class="search-clr" id="srchClr" onclick="clearSearch()">✕</button>
+      </div>
+    </div>
+    <div class="filter-row">
+      <span class="filter-lbl">빠른보기</span>
+      <div class="chips" id="chips">
+        <button class="chip on" data-f="all" onclick="setFilter('all')">전체</button>
+        <button class="chip" data-f="공공요금" onclick="setFilter('공공요금')">공공요금</button>
+        <button class="chip" data-f="연간계약" onclick="setFilter('연간계약')">연간계약</button>
+        <button class="chip" data-f="자동이체" onclick="setFilter('자동이체')">자동이체</button>
+        <button class="chip" data-f="메모" onclick="setFilter('메모')">메모 있음</button>
+        <button class="chip filter-toggle" id="detailFilterBtn" onclick="toggleDetailFilters()" aria-expanded="false">상세필터 ▾</button>
+        <button class="chip chip-rst" onclick="resetAll()">보기 초기화</button>
+      </div>
+      <div class="quick-sort">
+        <span class="filter-lbl">정렬</span>
+        <select id="sortSel" class="sort-sel" onchange="setSortMode(this.value)">
+          <option value="default">엑셀 순서</option>
+          <option value="expiry">만료 임박순</option>
+          <option value="category">구분별 보기</option>
+          <option value="name">계약명 가나다순</option>
+          <option value="vendor">업체명 가나다순</option>
+          <option value="payday">지급일 빠른순</option>
+          <option value="amountDesc">계약금액 큰 순</option>
+          <option value="monthlyDesc">월 지급액 큰 순</option>
+          <option value="memo">메모 있는 항목 먼저</option>
+        </select>
+        <span class="view-note" id="viewNote">전체 · 엑셀 순서</span>
+      </div>
+    </div>
+    <div class="detail-filter-panel" id="detailFilters">
+      <div class="detail-filter-row">
+        <span class="filter-lbl">증빙</span>
+        <div class="chips">
+          <button class="chip" data-f="세금계산서" onclick="setFilter('세금계산서')">세금계산서</button>
+          <button class="chip" data-f="계산서" onclick="setFilter('계산서')">계산서</button>
+          <button class="chip" data-f="지로" onclick="setFilter('지로')">지로</button>
+          <button class="chip" data-f="고지서" onclick="setFilter('고지서')">고지서</button>
+          <button class="chip" data-f="무증빙" onclick="setFilter('무증빙')">무증빙</button>
+        </div>
+      </div>
+      <div class="detail-filter-row">
+        <span class="filter-lbl">상태</span>
+        <div class="chips">
+          <button class="chip c-red" data-f="종료됨" onclick="setFilter('종료됨')">종료됨</button>
+          <button class="chip c-orange" data-f="60일" onclick="setFilter('60일')">만료 60일 이내</button>
+          <button class="chip c-red" data-f="30일" onclick="setFilter('30일')">만료 30일 이내</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- List -->
+  <div class="list-sec">
+    <div class="list-hdr">
+      <h2>계약현황 목록</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="list-cnt" id="listCnt">0건</span>
+      </div>
+    </div>
+
+    <!-- Desktop Table -->
+    <div class="tbl-wrap" id="tblWrap">
+      <table class="ctbl">
+        <thead>
+          <tr>
+            <th onclick="sortBy('expireStatus')">만료상태</th>
+            <th onclick="sortBy('category')">구분</th>
+            <th onclick="sortBy('name')">계약명</th>
+            <th onclick="sortBy('vendor')">계약업체</th>
+            <th>연락처</th>
+            <th onclick="sortBy('contractEndDate')">계약기간</th>
+            <th onclick="sortBy('contractAmount')">계약금액</th>
+            <th onclick="sortBy('monthlyAmount')">월 지급액</th>
+            <th onclick="sortBy('payDayText')">지급일</th>
+            <th onclick="sortBy('evidenceType')">증빙구분</th>
+            <th>메모</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Cards -->
+    <div class="m-cards" id="mcards"></div>
+
+    <!-- Empty State -->
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="empty-ico" id="emptyIco">📂</div>
+      <h3 id="emptyTitle">계약 데이터가 없습니다</h3>
+      <p id="emptyMsg">기본틀을 다시 보려면 새로 받은 파일을 열거나, 엑셀 파일을 불러와주세요.</p>
+      <div class="empty-steps" id="emptySteps">
+        <div class="empty-step"><b>1. 엑셀 불러오기</b><span>기존 계약현황표를 선택하면 브라우저 안에서만 읽습니다.</span></div>
+        <div class="empty-step"><b>2. 현황 자동 정리</b><span>업체·기간·금액·증빙·만료상태를 목록으로 보여줍니다.</span></div>
+        <div class="empty-step"><b>3. 메모로 관리</b><span>재계약 검토, 담당자 통화 등 운영 메모를 남깁니다.</span></div>
+      </div>
+      <button class="btn btn-primary" onclick="triggerExcelInput()">엑셀 불러오기</button>
+      &nbsp;
+      <button class="btn" onclick="openAdd()">계약 추가</button>
+      <div class="empty-tip" id="emptyTip">엑셀은 업무용 현황 파일, 백업은 앱 상태를 그대로 저장·복원하는 보관용 파일입니다.</div>
+    </div>
+  </div>
+
+</div><!-- /.main -->
+
+<footer class="app-footer">
+  made by <b>senvip</b> · 연간계약보드 v1.1
+  <div class="footer-help">외부 전송 없음 · 데이터는 현재 브라우저에 저장됩니다. · 엑셀은 업무용 현황 파일, 백업은 앱 상태 보관·복원용 파일입니다.</div>
+</footer>
+
+<!-- Detail/Edit Modal -->
+<div class="ov" id="detailOv" onclick="ovClick(this,'detailOv')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="modalTitle">계약 상세보기</h3>
+      <button class="modal-cls" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-ftr">
+      <div class="mf-l">
+        <button class="btn btn-danger btn-sm" id="delBtn" onclick="doDelete()">삭제</button>
+      </div>
+      <div class="mf-r">
+        <button class="btn btn-sm" id="editBtn" onclick="startEdit()" style="display:none">수정</button>
+        <button class="btn btn-primary btn-sm" id="saveBtn" onclick="saveContract()" style="display:none">저장</button>
+        <button class="btn btn-sm" id="cancelBtn" onclick="cancelEdit()" style="display:none">취소</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="ov" id="confOv" onclick="ovClick(this,'confOv')">
+  <div class="modal sm">
+    <div class="modal-hdr">
+      <h3 id="confTitle">확인</h3>
+      <button class="modal-cls" onclick="closeConf()">✕</button>
+    </div>
+    <div class="conf-body">
+      <div class="conf-ico" id="confIco">⚠️</div>
+      <div class="conf-ttl" id="confTtl"></div>
+      <div class="conf-msg" id="confMsg"></div>
+    </div>
+    <div class="modal-ftr conf-ftr">
+      <button class="btn" id="confCancel" onclick="closeConf()">취소</button>
+      <button class="btn" id="confAlt" style="display:none"></button>
+      <button class="btn btn-primary" id="confOk">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ================================================================
+// STATE
+// ================================================================
+const SK = 'annual_contract_board_v11_stable';
+const DEFAULT_DATA = {
+  "appName": "연간계약보드",
+  "schoolYear": "2026학년도",
+  "schoolName": "",
+  "contracts": [
+    {
+      "id": "template-001",
+      "no": 1,
+      "category": "연간계약",
+      "name": "학교장 직책급 업무수행경비",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "근무기간",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "근무기간",
+      "contractAmount": "3000000",
+      "monthlyAmount": "250000",
+      "payDayText": "매월 1일",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "무증빙",
+      "evidenceRaw": "무증빙",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-002",
+      "no": 2,
+      "category": "공공요금",
+      "name": "학교장터(S2B) 수수료",
+      "vendor": "-",
+      "contact": "",
+      "periodType": "발생 시",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "발생 시",
+      "contractAmount": "0",
+      "monthlyAmount": "청구금액",
+      "payDayText": "매월 초",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-003",
+      "no": 3,
+      "category": "공공요금",
+      "name": "전기요금",
+      "vendor": "한전",
+      "contact": "02-123",
+      "periodType": "기간 없음",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "-",
+      "contractAmount": "0",
+      "monthlyAmount": "청구금액",
+      "payDayText": "5일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-004",
+      "no": 4,
+      "category": "공공요금",
+      "name": "음식물류 폐기물처리",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "1L당 000원",
+      "monthlyAmount": "청구금액",
+      "payDayText": "매월 초",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "계산서",
+      "evidenceRaw": "계산서",
+      "originalNote": "공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-005",
+      "no": 5,
+      "category": "연간계약",
+      "name": "기름걸레 교체",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "매월 10일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-006",
+      "no": 6,
+      "category": "연간계약",
+      "name": "정기소독(본관 및 급식실)",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "실시금액",
+      "payDayText": "소독후\n매월10일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "계산서",
+      "evidenceRaw": "계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-007",
+      "no": 7,
+      "category": "연간계약",
+      "name": "교직원 화장실 비데",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2024-06-28",
+      "contractEndDate": "2029-06-27",
+      "originalPeriodText": "2024. 6. 28. ~ 2029. 6. 27.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "20일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-008",
+      "no": 8,
+      "category": "연간계약",
+      "name": "정수기 임차",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "20일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-009",
+      "no": 9,
+      "category": "연간계약",
+      "name": "전기안전관리 용역",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "매월 20일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-010",
+      "no": 10,
+      "category": "연간계약",
+      "name": "소방시설 안전관리 용역",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "매월 20일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-011",
+      "no": 11,
+      "category": "연간계약",
+      "name": "승강기유지보수 용역",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "매월 20일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "엘베 번호:",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-012",
+      "no": 12,
+      "category": "연간계약",
+      "name": "산업안전보건 컨설팅",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "매월 20일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "근골격계조사 0000년 실시(매3년실시)",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-013",
+      "no": 13,
+      "category": "연간계약",
+      "name": "무인기계경비 용역",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2025-03-01",
+      "contractEndDate": "2028-02-29",
+      "originalPeriodText": "2025. 3. 1. ~ 2028. 2. 29.",
+      "contractAmount": "0",
+      "monthlyAmount": "0",
+      "payDayText": "25일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-014",
+      "no": 14,
+      "category": "공공요금",
+      "name": "도시가스",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간 없음",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "-",
+      "contractAmount": "0",
+      "monthlyAmount": "청구금액",
+      "payDayText": "25일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-015",
+      "no": 15,
+      "category": "공공요금",
+      "name": "팩스요금",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간 없음",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "-",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "25일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-016",
+      "no": 16,
+      "category": "공공요금",
+      "name": "전화요금",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간 없음",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "-",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "25일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-017",
+      "no": 17,
+      "category": "공공요금",
+      "name": "위성방송 수신료",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간 없음",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "-",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "25일 자동이체",
+      "payCycle": "매월",
+      "isAutoPay": true,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-018",
+      "no": 18,
+      "category": "연간계약",
+      "name": "공기청정기",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "교육청통합계약, \n4월부터 지급, 계좌이체\n검사검수부터~",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-019",
+      "no": 19,
+      "category": "연간계약",
+      "name": "정보화기기,학내망 유지보수",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-020",
+      "no": 20,
+      "category": "연간계약",
+      "name": "복합기(oo실, oo부)",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2030-02-28",
+      "originalPeriodText": "2026. 3. 1.~ 2030. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-021",
+      "no": 21,
+      "category": "연간계약",
+      "name": "컬러프린터",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-022",
+      "no": 22,
+      "category": "연간계약",
+      "name": "1교1변호사제 변호사 자문료",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-023",
+      "no": 23,
+      "category": "연간계약",
+      "name": "제3섹터 시설 관리",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-024",
+      "no": 24,
+      "category": "연간계약",
+      "name": "당직경비",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-025",
+      "no": 25,
+      "category": "연간계약",
+      "name": "청소미화",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "0",
+      "monthlyAmount": "",
+      "payDayText": "매월 25일경",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-026",
+      "no": 26,
+      "category": "연간계약",
+      "name": "배식도우미",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "매월 말",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-027",
+      "no": 27,
+      "category": "공공요금",
+      "name": "상하수도요금",
+      "vendor": "••수도사업소",
+      "contact": "-",
+      "periodType": "기간 없음",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "-",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "짝수월 말일 \n자동이체",
+      "payCycle": "격월",
+      "isAutoPay": true,
+      "evidenceType": "지로",
+      "evidenceRaw": "지로(세금X)",
+      "originalNote": "2달치 격월청구 /공공요금",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-028",
+      "no": 28,
+      "category": "연간계약",
+      "name": "물품관리(RFID) 시스템",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "상반기/하반기",
+      "payCycle": "반기",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "물품관리 00,000원(2회)\n재물관리 00,000원(1회)",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-029",
+      "no": 29,
+      "category": "연간계약",
+      "name": "실내공기질 측정용역",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간 없음",
+      "contractStartDate": "",
+      "contractEndDate": "",
+      "originalPeriodText": "",
+      "contractAmount": "",
+      "monthlyAmount": "측정 후\n 청구금액",
+      "payDayText": "상반기/하반기",
+      "payCycle": "반기",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "교육청 통합계약/ \n4월쯤 공문 올 예정",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    },
+    {
+      "id": "template-030",
+      "no": 30,
+      "category": "연간계약",
+      "name": "폐식용유 수거",
+      "vendor": "•••",
+      "contact": "-",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "세입",
+      "payDayText": "",
+      "payCycle": "기타",
+      "isAutoPay": false,
+      "evidenceType": "",
+      "evidenceRaw": "",
+      "originalNote": "00,000원/1캔(18L)",
+      "managementMemo": "",
+      "expireStatus": "",
+      "createdAt": "2026-06-06T00:00:00.000Z",
+      "updatedAt": "2026-06-06T00:00:00.000Z"
+    }
+  ],
+  "lastUpdated": null
+};
+function cloneDefaultData() { return JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+let D = cloneDefaultData();
+let gFilters = [];
+let gSearch = '';
+let gSortField = null;
+let gSortDir = 'asc';
+let gSortMode = 'default';
+let gCurId = null;
+let gIsEdit = false;
+let gIsAdd = false;
+let confCb = null;
+let confAltCb = null;
+
+// ================================================================
+// INIT
+// ================================================================
+document.addEventListener('DOMContentLoaded', function() {
+  loadStorage();
+  renderAll();
+});
+
+// ================================================================
+// STORAGE
+// ================================================================
+function loadStorage() {
+  try {
+    var raw = localStorage.getItem(SK);
+    if (raw) {
+      var p = JSON.parse(raw);
+      D = Object.assign({}, cloneDefaultData(), p);
+      if (!Array.isArray(D.contracts)) D.contracts = [];
+    } else {
+      D = cloneDefaultData();
+    }
+  } catch(e) { console.error(e); D = cloneDefaultData(); }
+  document.getElementById('schoolName').value = D.schoolName || '';
+  document.getElementById('schoolYear').value = D.schoolYear || '2026학년도';
+  updLastUpd();
+}
+
+function saveStorage() {
+  D.lastUpdated = new Date().toISOString();
+  try { localStorage.setItem(SK, JSON.stringify(D)); } catch(e) { toast('저장 오류: ' + e.message, 'err'); }
+  updLastUpd();
+}
+
+function saveSchoolInfo() {
+  D.schoolName = document.getElementById('schoolName').value;
+  D.schoolYear = document.getElementById('schoolYear').value;
+  saveStorage();
+}
+
+function updLastUpd() {
+  var el = document.getElementById('lastUpd');
+  if (D.lastUpdated) el.textContent = '업데이트: ' + fmtDT(D.lastUpdated);
+  else el.textContent = '';
+}
+
+// ================================================================
+// PERIOD PARSING
+// ================================================================
+function parsePeriod(txt) {
+  if (!txt || txt === '' || txt === '-' || txt === '－' || txt === '—' || txt === '\u2014') {
+    return { periodType:'기간 없음', contractStartDate:'', contractEndDate:'' };
+  }
+  var t = String(txt).trim();
+  if (/발생/i.test(t)) return { periodType:'발생 시', contractStartDate:'', contractEndDate:'' };
+  if (/근무/i.test(t)) return { periodType:'근무기간', contractStartDate:'', contractEndDate:'' };
+
+  // "2026. 3. 1. ~ 2027. 2. 28." or "2026.3.1~2027.2.28"
+  var m = t.match(/(\d{4})[.\s]+(\d{1,2})[.\s]+(\d{1,2})[.\s]*[~∼～–—\-]+\s*(\d{4})[.\s]+(\d{1,2})[.\s]+(\d{1,2})/);
+  if (m) {
+    return { periodType:'기간계약',
+      contractStartDate: m[1]+'-'+pad2(m[2])+'-'+pad2(m[3]),
+      contractEndDate:   m[4]+'-'+pad2(m[5])+'-'+pad2(m[6]) };
+  }
+
+  // ISO range "2026-03-01 ~ 2027-02-28"
+  var m2 = t.match(/(\d{4}-\d{2}-\d{2})\s*[~∼～–—\-]+\s*(\d{4}-\d{2}-\d{2})/);
+  if (m2) return { periodType:'기간계약', contractStartDate:m2[1], contractEndDate:m2[2] };
+
+  // Slash "2026/3/1~2027/2/28"
+  var m3 = t.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\s*[~\u223c]+\s*(\d{4})\/(\d{1,2})\/(\d{1,2})/);
+  if (m3) {
+    return { periodType:'기간계약',
+      contractStartDate: m3[1]+'-'+pad2(m3[2])+'-'+pad2(m3[3]),
+      contractEndDate:   m3[4]+'-'+pad2(m3[5])+'-'+pad2(m3[6]) };
+  }
+
+  // Single date (start date only)
+  var m4 = t.match(/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if (m4) return { periodType:'기간계약', contractStartDate: m4[1]+'-'+pad2(m4[2])+'-'+pad2(m4[3]), contractEndDate:'' };
+
+  return { periodType:'기간 없음', contractStartDate:'', contractEndDate:'' };
+}
+
+function fmtPeriod(c) {
+  if (c.periodType === '발생 시') return '발생 시';
+  if (c.periodType === '근무기간') return '근무기간';
+  if (c.periodType === '기간 없음') return '-';
+  var s = c.contractStartDate || '', e = c.contractEndDate || '';
+  if (s && e) return s + ' ~ ' + e;
+  if (s) return s + ' ~';
+  if (e) return '~ ' + e;
+  return '-';
+}
+
+function buildPeriodText(periodType, startDate, endDate) {
+  return fmtPeriod({ periodType: periodType, contractStartDate: startDate || '', contractEndDate: endDate || '' });
+}
+
+function normalizeDateCell(v) {
+  if (v === null || v === undefined || v === '') return '';
+  if (v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  if (typeof v === 'number' && isFinite(v)) {
+    // Excel serial date: days since 1899-12-30
+    var base = new Date(Date.UTC(1899, 11, 30));
+    var d = new Date(base.getTime() + Math.round(v) * 86400000);
+    return d.toISOString().slice(0,10);
+  }
+  var t = String(v).trim();
+  if (!t || t === '-' || t === '－' || t === '—') return '';
+  var m = t.match(/^(\d{4})[-.\/년\s]+(\d{1,2})[-.\/월\s]+(\d{1,2})/);
+  if (m) return m[1] + '-' + pad2(m[2]) + '-' + pad2(m[3]);
+  return '';
+}
+
+function fmtKDate(iso) {
+  if (!iso) return '';
+  var p = iso.split('-');
+  if (p.length !== 3) return iso;
+  return p[0] + '. ' + parseInt(p[1]) + '. ' + parseInt(p[2]) + '.';
+}
+
+// ================================================================
+// EXPIRY
+// ================================================================
+function calcExpiry(endDate, periodType) {
+  if (!endDate || periodType !== '기간계약') return '-';
+  var today = new Date(); today.setHours(0,0,0,0);
+  var end = new Date(endDate); end.setHours(0,0,0,0);
+  var diff = Math.ceil((end - today) / 86400000);
+  if (diff < 0) return '종료됨';
+  if (diff <= 30) return '30일 이내 종료';
+  if (diff <= 60) return '60일 이내 종료';
+  if (diff <= 90) return '90일 이내 종료';
+  return '정상';
+}
+
+function expClass(st) {
+  var m = { '종료됨':'bdg-exp','30일 이내 종료':'bdg-30','60일 이내 종료':'bdg-60','90일 이내 종료':'bdg-90' };
+  return m[st] || 'bdg-none';
+}
+
+function isExpiryAlert(st) {
+  return ['종료됨','30일 이내 종료','60일 이내 종료','90일 이내 종료'].indexOf(st) !== -1;
+}
+
+function expShort(st) {
+  var m = { '30일 이내 종료':'30일 이내', '60일 이내 종료':'60일 이내', '90일 이내 종료':'90일 이내' };
+  return m[st] || st;
+}
+
+function expBadgeHtml(st) {
+  if (!isExpiryAlert(st)) return '';
+  return '<span class="bdg ' + expClass(st) + '">' + eh(expShort(st)) + '</span>';
+}
+
+function trClass(st) {
+  if (st === '종료됨' || st === '30일 이내 종료') return 'tr-exp';
+  if (st === '60일 이내 종료' || st === '90일 이내 종료') return 'tr-90';
+  return '';
+}
+
+function updExpiries() {
+  D.contracts.forEach(function(c) {
+    c.expireStatus = calcExpiry(c.contractEndDate, c.periodType);
+  });
+}
+
+// ================================================================
+// AUTO CLASSIFY
+// ================================================================
+var PUB_KW = ['공공요금','[공공]','전기요금','전기료','전기 요금','가스요금','가스 요금','수도요금','수도료','수도 요금','통신비','우편','방송수신','인터넷','한국전력','한전','도시가스','수도관','광역상수도','국민신문고'];
+
+function classifyCat(name, note) {
+  var t = ((name||'') + ' ' + (note||'')).toLowerCase();
+  for (var i = 0; i < PUB_KW.length; i++) {
+    if (t.indexOf(PUB_KW[i].toLowerCase()) !== -1) return '공공요금';
+  }
+  return '연간계약';
+}
+
+function detectAutoPay(txt) {
+  return !!(txt && String(txt).indexOf('자동이체') !== -1);
+}
+
+function classifyPayCycle(txt) {
+  if (!txt) return '기타';
+  var t = String(txt);
+  if (/매월|월납|청구월|월\s*지급/.test(t)) return '매월';
+  if (/격월/.test(t)) return '격월';
+  if (/반기|6개월/.test(t)) return '반기';
+  if (/연간|년간|1년/.test(t)) return '연간';
+  if (/발생/.test(t)) return '발생 시';
+  if (/자동이체/.test(t)) return '매월';
+  return '기타';
+}
+
+function normEvidence(txt) {
+  if (!txt) return '';
+  var t = String(txt);
+  if (/세금계산서/.test(t)) return '세금계산서';
+  if (/계산서/.test(t)) return '계산서';
+  if (/지로/.test(t)) return '지로';
+  if (/고지서/.test(t)) return '고지서';
+  if (/무증빙|없음/.test(t)) return '무증빙';
+  if (t.trim()) return '기타';
+  return '';
+}
+
+// ================================================================
+// EXCEL IMPORT
+// ================================================================
+function triggerExcelInput() {
+  document.getElementById('xlsxInp').click();
+}
+
+function handleExcel(ev) {
+  var file = ev.target.files[0];
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { toast('SheetJS를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.', 'err'); return; }
+  ldg(true);
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+      parseExcelRows(rows);
+    } catch(err) {
+      toast('파일 읽기 오류: ' + err.message, 'err');
+      ldg(false);
+    }
+    ev.target.value = '';
+  };
+  reader.onerror = function() { toast('파일을 읽을 수 없습니다.', 'err'); ldg(false); };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseExcelRows(rows) {
+  if (!rows || rows.length < 2) { toast('데이터가 없습니다.', 'err'); ldg(false); return; }
+
+  // Find header row
+  var hdIdx = 0;
+  var keyHdrs = ['계약명','계약업체','연락처','계약기간','계약금액','No','번호'];
+  for (var i = 0; i < Math.min(10, rows.length); i++) {
+    var rs = rows[i].join(' ');
+    if (keyHdrs.some(function(h){ return rs.indexOf(h) !== -1; })) { hdIdx = i; break; }
+  }
+
+  var hdrs = rows[hdIdx].map(function(h){ return h ? String(h).trim() : ''; });
+
+  // Column mapping
+  var COL = {};
+  var MAP = {
+    no:       ['no','No','NO','번호','순번','연번'],
+    name:     ['계약명','품명','항목명','사업명','용역명','계약 명','내용'],
+    vendor:   ['계약업체','업체명','업체','공급자','계약자','상호','업체(공급자)'],
+    contact:  ['연락처','전화','전화번호','담당자연락처','연락처(전화)'],
+    period:   ['계약기간','계약 기간','기간','계약기간(시작~종료)'],
+    startDate:['계약시작일','계약 시작일','시작일','시작 기간','계약시작','시작'],
+    endDate:  ['계약종료일','계약 종료일','종료일','만료일','계약만료일','계약종료','종료'],
+    amount:   ['계약금액','금액','총액','계약총액','총계약금액','계약금'],
+    monthly:  ['월지급액','월 지급액','월지출액','월 지출액','월금액','월납부액','지급금액','월납','월지급','월 지급'],
+    payday:   ['지급일','지급방법','지급 방법','납부일','납입일','지급일자','결제일','납부방법'],
+    evidence: ['증빙구분','증빙','증빙자료','거래형태','증빙종류'],
+    note:     ['비고','메모','참고','비 고','기타','note']
+  };
+
+  hdrs.forEach(function(h, idx) {
+    var lo = h.toLowerCase().replace(/\s/g,'');
+    for (var field in MAP) {
+      if (!COL[field]) {
+        var found = MAP[field].some(function(a){
+          return h === a || lo === a.toLowerCase().replace(/\s/g,'') || (h.length > 1 && h.indexOf(a) !== -1);
+        });
+        if (found) COL[field] = idx;
+      }
+    }
+  });
+
+  var newC = [];
+  var counter = 1;
+
+  for (var r = hdIdx + 1; r < rows.length; r++) {
+    var row = rows[r];
+    if (row.every(function(c){ return !c || String(c).trim() === ''; })) continue;
+
+    var name = COL.name !== undefined ? String(row[COL.name]||'').trim() : '';
+    if (!name) continue;
+
+    var periodTxt = COL.period !== undefined ? String(row[COL.period]||'').trim() : '';
+    var startRaw = COL.startDate !== undefined ? row[COL.startDate] : '';
+    var endRaw = COL.endDate !== undefined ? row[COL.endDate] : '';
+    var startIso = normalizeDateCell(startRaw);
+    var endIso = normalizeDateCell(endRaw);
+    var pd = (startIso || endIso)
+      ? { periodType:'기간계약', contractStartDate:startIso, contractEndDate:endIso }
+      : parsePeriod(periodTxt);
+    if (!periodTxt && (startIso || endIso)) periodTxt = buildPeriodText('기간계약', startIso, endIso);
+    var vendor = COL.vendor !== undefined ? String(row[COL.vendor]||'').trim() : '';
+    var contact = COL.contact !== undefined ? String(row[COL.contact]||'').trim() : '';
+    var amount = COL.amount !== undefined ? String(row[COL.amount]||'').trim() : '';
+    var monthly = COL.monthly !== undefined ? String(row[COL.monthly]||'').trim() : '';
+    var payday = COL.payday !== undefined ? String(row[COL.payday]||'').trim() : '';
+    var evidence = COL.evidence !== undefined ? String(row[COL.evidence]||'').trim() : '';
+    var note = COL.note !== undefined ? String(row[COL.note]||'').trim() : '';
+    var noVal = COL.no !== undefined ? String(row[COL.no]||'').trim() : String(counter);
+
+    var cat = classifyCat(name, note);
+    var isAP = detectAutoPay(payday);
+    var cycle = classifyPayCycle(payday);
+    var expSt = calcExpiry(pd.contractEndDate, pd.periodType);
+
+    newC.push({
+      id: genId(),
+      no: parseInt(noVal)||counter,
+      category: cat,
+      name: name,
+      vendor: vendor,
+      contact: contact,
+      periodType: pd.periodType,
+      contractStartDate: pd.contractStartDate,
+      contractEndDate: pd.contractEndDate,
+      originalPeriodText: periodTxt,
+      contractAmount: amount,
+      monthlyAmount: monthly,
+      payDayText: payday,
+      payCycle: cycle,
+      isAutoPay: isAP,
+      evidenceType: normEvidence(evidence),
+      evidenceRaw: evidence,
+      originalNote: note,
+      managementMemo: '',
+      expireStatus: expSt,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    counter++;
+  }
+
+  ldg(false);
+
+  if (newC.length === 0) { toast('불러올 수 있는 계약 데이터가 없습니다.', 'err'); return; }
+
+  if (D.contracts.length > 0) {
+    showConf({
+      ico:'📋', title:'엑셀 불러오기',
+      msg: '엑셀에서 ' + newC.length + '건을 읽었습니다.\n기존 ' + D.contracts.length + '건이 있습니다.\n어떻게 처리할까요?',
+      okTxt: '전체 교체',
+      onOk: function() { D.contracts = newC; saveStorage(); renderAll(); toast(newC.length + '건으로 교체했습니다.', 'ok'); },
+      altTxt: '기존에 추가',
+      onAlt: function() {
+        var maxNo = D.contracts.reduce(function(mx,c){ return Math.max(mx, c.no||0); }, 0);
+        newC.forEach(function(c,i){ c.no = maxNo + i + 1; });
+        D.contracts = D.contracts.concat(newC);
+        saveStorage(); renderAll();
+        toast(newC.length + '건을 추가했습니다.', 'ok');
+      }
+    });
+  } else {
+    D.contracts = newC;
+    saveStorage(); renderAll();
+    toast(newC.length + '건을 불러왔습니다.', 'ok');
+  }
+}
+
+// ================================================================
+// EXCEL EXPORT
+// ================================================================
+function exportExcel() {
+  if (typeof XLSX === 'undefined') { toast('SheetJS를 불러오지 못했습니다.', 'err'); return; }
+  if (D.contracts.length === 0) { toast('내보낼 데이터가 없습니다.', 'err'); return; }
+  updExpiries();
+
+  var hd = ['No','구분','계약명','계약업체','연락처','기간유형','계약시작일','계약종료일',
+            '계약금액','월 지급액','지급일','지급주기','자동이체 여부','증빙구분',
+            '비고','관리메모','만료상태'];
+
+  var rows = D.contracts.map(function(c, i) {
+    return [
+      i+1, c.category||'', c.name||'', c.vendor||'', c.contact||'',
+      c.periodType||'', c.contractStartDate||'', c.contractEndDate||'',
+      c.contractAmount||'', c.monthlyAmount||'',
+      c.payDayText||'', c.payCycle||'',
+      c.isAutoPay ? '자동이체' : '',
+      c.evidenceType||'', c.originalNote||'', c.managementMemo||'',
+      c.expireStatus||''
+    ];
+  });
+
+  var ws = XLSX.utils.aoa_to_sheet([hd].concat(rows));
+  ws['!cols'] = [
+    {wch:5},{wch:10},{wch:28},{wch:16},{wch:15},
+    {wch:30},{wch:13},{wch:13},{wch:16},{wch:16},
+    {wch:16},{wch:8},{wch:10},{wch:13},{wch:30},{wch:30},{wch:13}
+  ];
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '연간계약현황');
+  var fn = (D.schoolName||'연간계약보드') + '_' + (D.schoolYear||'') + '_' + fmtDateFile(new Date()) + '.xlsx';
+  XLSX.writeFile(wb, fn);
+  toast('엑셀 파일을 저장했습니다. 계약기간 컬럼은 빼고 시작일/종료일만 내보냅니다.', 'ok');
+}
+
+// ================================================================
+// BACKUP / RESTORE
+// ================================================================
+function doBackup() {
+  if (D.contracts.length === 0) { toast('백업할 데이터가 없습니다.', 'err'); return; }
+  var blob = new Blob([JSON.stringify(D, null, 2)], { type:'application/octet-stream' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = (D.schoolName||'연간계약보드') + '_백업_' + fmtDateFile(new Date()) + '.bak';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('백업 파일을 저장했습니다.', 'ok');
+}
+
+function triggerRestoreInput() {
+  document.getElementById('bakInp').click();
+}
+
+function handleRestore(ev) {
+  var file = ev.target.files[0];
+  if (!file) return;
+  showConf({
+    ico:'🔄', title:'백업 불러오기',
+    msg: '백업 파일로 복원하면 현재 데이터가 덮어쓰여집니다.\n계속하시겠습니까?',
+    okTxt: '불러오기',
+    onOk: function() {
+      var rd = new FileReader();
+      rd.onload = function(e) {
+        try {
+          var p = JSON.parse(e.target.result);
+          if (!p.contracts || !Array.isArray(p.contracts)) { toast('유효하지 않은 백업 파일입니다.', 'err'); return; }
+          D = Object.assign({}, D, p);
+          saveStorage();
+          document.getElementById('schoolName').value = D.schoolName || '';
+          document.getElementById('schoolYear').value = D.schoolYear || '2026학년도';
+          renderAll();
+          toast(p.contracts.length + '건을 불러왔습니다.', 'ok');
+        } catch(err) { toast('복원 오류: ' + err.message, 'err'); }
+      };
+      rd.readAsText(file);
+    }
+  });
+  ev.target.value = '';
+}
+
+// ================================================================
+// RESET
+// ================================================================
+function doReset() {
+  showConf({
+    ico:'⚠️', title:'전체 초기화',
+    msg: '현재 브라우저에 저장된 계약현황과 메모가 삭제됩니다.\n계속할까요?',
+    okTxt: '초기화',
+    onOk: function() { D.contracts = []; saveStorage(); renderAll(); toast('데이터가 초기화되었습니다.', 'ok'); }
+  });
+}
+
+// ================================================================
+// FILTER / SEARCH / SORT
+// ================================================================
+function getFiltered() {
+  updExpiries();
+  var list = D.contracts.slice();
+
+  if (gSearch) {
+    var q = gSearch.toLowerCase();
+    list = list.filter(function(c) {
+      return [c.name,c.vendor,c.contact,c.originalPeriodText,c.contractAmount,
+              c.monthlyAmount,c.payDayText,c.evidenceType,c.originalNote,c.managementMemo,c.category]
+        .some(function(v){ return v && String(v).toLowerCase().indexOf(q) !== -1; });
+    });
+  }
+
+  list = applyMultiFilters(list);
+
+  if (gSortField) {
+    list.sort(function(a, b) {
+      var res = compareField(a, b, gSortField);
+      return gSortDir === 'asc' ? res : -res;
+    });
+  } else {
+    applySortMode(list);
+  }
+
+  return list;
+}
+
+
+function toggleDetailFilters() {
+  var panel = document.getElementById('detailFilters');
+  var btn = document.getElementById('detailFilterBtn');
+  if (!panel || !btn) return;
+  var open = !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+  btn.classList.toggle('on', open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  btn.textContent = open ? '상세필터 ▴' : '상세필터 ▾';
+}
+
+function setSortMode(mode) {
+  gSortMode = mode || 'default';
+  gSortField = null;
+  gSortDir = 'asc';
+  document.querySelectorAll('.ctbl th').forEach(function(th) {
+    th.classList.remove('sort-asc','sort-desc');
+  });
+  renderList();
+}
+
+function sortLabel(mode) {
+  var map = {
+    default:'엑셀 순서', expiry:'만료 임박순', category:'구분별 보기', name:'계약명 가나다순',
+    vendor:'업체명 가나다순', payday:'지급일 빠른순', amountDesc:'계약금액 큰 순',
+    monthlyDesc:'월 지급액 큰 순', memo:'메모 있는 항목 먼저'
+  };
+  return map[mode] || '엑셀 순서';
+}
+
+function filterLabel(f) {
+  var map = {
+    all:'전체', 공공요금:'공공요금', 연간계약:'연간계약', 자동이체:'자동이체', '90일':'만료관리',
+    '60일':'60일 이내', '30일':'30일 이내', 종료됨:'종료됨', 기간없음:'기간 없음', 발생시:'발생 시',
+    근무기간:'근무기간', 세금계산서:'세금계산서', 계산서:'계산서', 지로:'지로', 고지서:'고지서', 무증빙:'무증빙', 메모:'메모 있음'
+  };
+  return map[f] || f || '전체';
+}
+
+function filterGroup(f) {
+  if (['공공요금','연간계약'].indexOf(f) !== -1) return 'category';
+  if (['90일','60일','30일','종료됨','기간없음','발생시','근무기간'].indexOf(f) !== -1) return 'status';
+  if (['세금계산서','계산서','지로','고지서','무증빙'].indexOf(f) !== -1) return 'evidence';
+  if (['자동이체','메모'].indexOf(f) !== -1) return 'flag';
+  return 'etc';
+}
+
+function matchesOneFilter(c, f) {
+  switch(f) {
+    case '공공요금': return c.category === '공공요금';
+    case '연간계약': return c.category === '연간계약';
+    case '자동이체': return !!c.isAutoPay;
+    case '90일': return ['90일 이내 종료','60일 이내 종료','30일 이내 종료'].indexOf(c.expireStatus) !== -1;
+    case '60일': return ['60일 이내 종료','30일 이내 종료'].indexOf(c.expireStatus) !== -1;
+    case '30일': return c.expireStatus === '30일 이내 종료';
+    case '종료됨': return c.expireStatus === '종료됨';
+    case '기간없음': return c.periodType === '기간 없음';
+    case '발생시': return c.periodType === '발생 시';
+    case '근무기간': return c.periodType === '근무기간';
+    case '세금계산서': return c.evidenceType === '세금계산서';
+    case '계산서': return c.evidenceType === '계산서';
+    case '지로': return c.evidenceType === '지로';
+    case '고지서': return c.evidenceType === '고지서';
+    case '무증빙': return c.evidenceType === '무증빙';
+    case '메모': return !!(c.managementMemo && c.managementMemo.trim());
+    default: return true;
+  }
+}
+
+function applyMultiFilters(list) {
+  if (!gFilters.length) return list;
+  var grouped = {};
+  gFilters.forEach(function(f) {
+    var g = filterGroup(f);
+    if (!grouped[g]) grouped[g] = [];
+    grouped[g].push(f);
+  });
+
+  return list.filter(function(c) {
+    return Object.keys(grouped).every(function(group) {
+      var fs = grouped[group];
+      if (group === 'flag') {
+        // 자동이체 + 메모 있음은 둘 다 만족해야 하는 조건
+        return fs.every(function(f){ return matchesOneFilter(c, f); });
+      }
+      // 같은 묶음 안에서는 OR, 묶음끼리는 AND
+      // 예: 공공요금/연간계약은 둘 중 하나, 증빙구분도 선택값 중 하나
+      return fs.some(function(f){ return matchesOneFilter(c, f); });
+    });
+  });
+}
+
+function selectedFilterText() {
+  if (!gFilters.length) return '전체';
+  return gFilters.map(filterLabel).join(' + ');
+}
+
+function updateFilterButtons() {
+  document.querySelectorAll('.chip').forEach(function(c) {
+    var f = c.getAttribute('data-f');
+    if (!f) return;
+    c.classList.toggle('on', f === 'all' ? gFilters.length === 0 : gFilters.indexOf(f) !== -1);
+  });
+  document.querySelectorAll('.stat').forEach(function(s) {
+    var f = s.getAttribute('data-stat');
+    s.classList.toggle('active', f === 'all' ? gFilters.length === 0 : (!!f && gFilters.indexOf(f) !== -1));
+  });
+}
+
+function updateViewNote(count) {
+  var el = document.getElementById('viewNote');
+  if (!el) return;
+  var sortText = gSortField ? '표 제목 정렬' : sortLabel(gSortMode);
+  var parts = [selectedFilterText(), sortText];
+  if (gSearch) parts.unshift('검색 중');
+  el.textContent = parts.join(' · ') + ' · ' + count + '건';
+}
+
+
+function expiryRank(st) {
+  var map = { '종료됨':0, '30일 이내 종료':1, '60일 이내 종료':2, '90일 이내 종료':3, '정상':7, '-':8, '':8 };
+  return map[st || '-'] !== undefined ? map[st || '-'] : 8;
+}
+
+function categoryRank(cat) {
+  if (cat === '공공요금') return 0;
+  if (cat === '연간계약') return 1;
+  return 9;
+}
+
+function toSortNumber(v) {
+  if (v === null || v === undefined) return null;
+  var raw = String(v).replace(/,/g, '').trim();
+  if (!raw) return null;
+  var m = raw.match(/^-?\d+(\.\d+)?/);
+  return m ? Number(m[0]) : null;
+}
+
+function payDayNum(v) {
+  if (!v) return 99;
+  var t = String(v);
+  if (/초/.test(t)) return 1;
+  if (/중순/.test(t)) return 15;
+  if (/말/.test(t)) return 31;
+  var m = t.match(/(\d{1,2})\s*일/);
+  return m ? Math.min(31, Math.max(1, parseInt(m[1], 10))) : 99;
+}
+
+function byNo(a,b) {
+  return (Number(a.no)||9999) - (Number(b.no)||9999);
+}
+
+function compareName(a,b) {
+  return String(a.name||'').localeCompare(String(b.name||''), 'ko') || byNo(a,b);
+}
+
+function compareField(a, b, field) {
+  if (field === 'contractAmount' || field === 'monthlyAmount') {
+    var an = toSortNumber(a[field]);
+    var bn = toSortNumber(b[field]);
+    if (an === null && bn === null) return compareName(a,b);
+    if (an === null) return 1;
+    if (bn === null) return -1;
+    return an - bn || compareName(a,b);
+  }
+  if (field === 'payDayText') {
+    return payDayNum(a.payDayText) - payDayNum(b.payDayText) || compareName(a,b);
+  }
+  if (field === 'contractEndDate') {
+    var av = a.contractEndDate || '9999-12-31';
+    var bv = b.contractEndDate || '9999-12-31';
+    return av.localeCompare(bv) || compareName(a,b);
+  }
+  if (field === 'expireStatus') {
+    return expiryRank(a.expireStatus) - expiryRank(b.expireStatus) || compareName(a,b);
+  }
+  if (field === 'category') {
+    return categoryRank(a.category) - categoryRank(b.category) || compareName(a,b);
+  }
+  var sa = a[field] || '';
+  var sb = b[field] || '';
+  return String(sa).localeCompare(String(sb), 'ko') || compareName(a,b);
+}
+
+function applySortMode(list) {
+  switch (gSortMode) {
+    case 'expiry':
+      list.sort(function(a,b){
+        return expiryRank(a.expireStatus) - expiryRank(b.expireStatus)
+          || (a.contractEndDate || '9999-12-31').localeCompare(b.contractEndDate || '9999-12-31')
+          || compareName(a,b);
+      });
+      break;
+    case 'category':
+      list.sort(function(a,b){ return categoryRank(a.category) - categoryRank(b.category) || compareName(a,b); });
+      break;
+    case 'name':
+      list.sort(compareName);
+      break;
+    case 'vendor':
+      list.sort(function(a,b){ return String(a.vendor||'').localeCompare(String(b.vendor||''), 'ko') || compareName(a,b); });
+      break;
+    case 'payday':
+      list.sort(function(a,b){ return payDayNum(a.payDayText) - payDayNum(b.payDayText) || compareName(a,b); });
+      break;
+    case 'amountDesc':
+      list.sort(function(a,b){
+        var an = toSortNumber(a.contractAmount), bn = toSortNumber(b.contractAmount);
+        if (an === null && bn === null) return compareName(a,b);
+        if (an === null) return 1;
+        if (bn === null) return -1;
+        return bn - an || compareName(a,b);
+      });
+      break;
+    case 'monthlyDesc':
+      list.sort(function(a,b){
+        var an = toSortNumber(a.monthlyAmount), bn = toSortNumber(b.monthlyAmount);
+        if (an === null && bn === null) return compareName(a,b);
+        if (an === null) return 1;
+        if (bn === null) return -1;
+        return bn - an || compareName(a,b);
+      });
+      break;
+    case 'memo':
+      list.sort(function(a,b){
+        var am = !!(a.managementMemo && a.managementMemo.trim());
+        var bm = !!(b.managementMemo && b.managementMemo.trim());
+        return (am === bm ? 0 : am ? -1 : 1) || compareName(a,b);
+      });
+      break;
+    default:
+      list.sort(byNo);
+  }
+}
+
+function setFilter(f) {
+  if (f === 'all') {
+    gFilters = [];
+  } else {
+    var idx = gFilters.indexOf(f);
+    if (idx === -1) gFilters.push(f);
+    else gFilters.splice(idx, 1);
+  }
+  updateFilterButtons();
+  renderList();
+}
+
+function handleSearch(v) {
+  gSearch = v;
+  document.getElementById('srchClr').classList.toggle('on', v.length > 0);
+  renderList();
+}
+
+function clearSearch() {
+  gSearch = '';
+  document.getElementById('srchInp').value = '';
+  document.getElementById('srchClr').classList.remove('on');
+  renderList();
+}
+
+function resetAll() {
+  gFilters = []; gSearch = ''; gSortMode = 'default'; gSortField = null; gSortDir = 'asc';
+  document.getElementById('srchInp').value = '';
+  document.getElementById('srchClr').classList.remove('on');
+  var sel = document.getElementById('sortSel');
+  if (sel) sel.value = 'default';
+  document.querySelectorAll('.ctbl th').forEach(function(th) { th.classList.remove('sort-asc','sort-desc'); });
+  setFilter('all');
+}
+
+function sortBy(field) {
+  if (gSortField === field) {
+    gSortDir = gSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    gSortField = field; gSortDir = 'asc';
+  }
+  document.querySelectorAll('.ctbl th').forEach(function(th) {
+    th.classList.remove('sort-asc','sort-desc');
+  });
+  var ths = document.querySelectorAll('.ctbl th');
+  gSortMode = 'custom';
+  var sel = document.getElementById('sortSel');
+  if (sel) sel.value = 'default';
+  var fieldIdx = {'expireStatus':0,'category':1,'name':2,'vendor':3,'contractEndDate':5,'contractAmount':6,'monthlyAmount':7,'payDayText':8,'evidenceType':9};
+  if (fieldIdx[field] !== undefined && ths[fieldIdx[field]]) {
+    ths[fieldIdx[field]].classList.add(gSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+  }
+  renderList();
+}
+
+// ================================================================
+// RENDER
+// ================================================================
+function renderAll() {
+  updExpiries();
+  renderDash();
+  renderList();
+}
+
+function renderDash() {
+  var all = D.contracts;
+  var pub = all.filter(function(c){ return c.category === '공공요금'; }).length;
+  var ann = all.filter(function(c){ return c.category === '연간계약'; }).length;
+  var ap  = all.filter(function(c){ return c.isAutoPay; }).length;
+  var e90 = all.filter(function(c){ return ['90일 이내 종료','60일 이내 종료','30일 이내 종료'].indexOf(c.expireStatus) !== -1; }).length;
+  var exp = all.filter(function(c){ return c.expireStatus === '종료됨'; }).length;
+  var mem = all.filter(function(c){ return c.managementMemo && c.managementMemo.trim(); }).length;
+  document.getElementById('sTotal').textContent = all.length;
+  document.getElementById('sPub').textContent = pub;
+  document.getElementById('sAnn').textContent = ann;
+  document.getElementById('sAuto').textContent = ap;
+  document.getElementById('s90').textContent = e90;
+  document.getElementById('sExp').textContent = exp;
+  document.getElementById('sMemo').textContent = mem;
+}
+
+function renderList() {
+  var filtered = getFiltered();
+  document.getElementById('listCnt').textContent = filtered.length + '건';
+  updateViewNote(filtered.length);
+
+  var hasData = D.contracts.length > 0;
+  var isEmpty = filtered.length === 0;
+
+  var emEl = document.getElementById('emptyState');
+  var tw = document.getElementById('tblWrap');
+  var mc = document.getElementById('mcards');
+
+  if (isEmpty) {
+    emEl.style.display = 'block';
+    tw.style.display = 'none';
+    mc.innerHTML = '';
+    document.getElementById('tbody').innerHTML = '';
+    if (!hasData) {
+      document.getElementById('emptyIco').textContent = '📂';
+      document.getElementById('emptyTitle').textContent = '계약 데이터가 없습니다';
+      document.getElementById('emptyMsg').textContent = '기본틀을 다시 보려면 새로 받은 파일을 열거나, 엑셀 파일을 불러와주세요.';
+      if (document.getElementById('emptySteps')) document.getElementById('emptySteps').style.display = 'grid';
+      if (document.getElementById('emptyTip')) document.getElementById('emptyTip').style.display = 'block';
+    } else {
+      document.getElementById('emptyIco').textContent = '🔍';
+      document.getElementById('emptyTitle').textContent = '검색 결과가 없습니다';
+      document.getElementById('emptyMsg').textContent = '다른 검색어 또는 필터를 시도해보세요.';
+      if (document.getElementById('emptySteps')) document.getElementById('emptySteps').style.display = 'none';
+      if (document.getElementById('emptyTip')) document.getElementById('emptyTip').style.display = 'none';
+    }
+    return;
+  }
+
+  emEl.style.display = 'none';
+  tw.style.display = '';
+  renderTable(filtered);
+  renderCards(filtered);
+}
+
+function renderTable(list) {
+  var tb = document.getElementById('tbody');
+  var html = '';
+  list.forEach(function(c) {
+    var st = c.expireStatus || '-';
+    var bc = expClass(st);
+    var tc = trClass(st);
+
+    var periodHtml = '';
+    if (c.periodType === '기간계약' && (c.contractStartDate || c.contractEndDate)) {
+      periodHtml = '<div style="font-size:11px;line-height:1.5;color:var(--t2)">';
+      if (c.contractStartDate) periodHtml += c.contractStartDate;
+      if (c.contractStartDate && c.contractEndDate) periodHtml += '<br>';
+      if (c.contractEndDate) periodHtml += '~ ' + c.contractEndDate;
+      periodHtml += '</div>';
+    } else {
+      periodHtml = '<span style="color:var(--t3);font-size:11px">' + eh(c.periodType||'-') + '</span>';
+    }
+
+    html += '<tr class="' + tc + '" onclick="openDetail(\'' + c.id + '\')">';
+    html += '<td>' + expBadgeHtml(st) + '</td>';
+    html += '<td><span class="bdg ' + (c.category==='공공요금'?'bdg-pub':'bdg-ann') + '">' + eh(c.category||'연간계약') + '</span></td>';
+    html += '<td><div class="name-cell" title="' + ea(c.name) + '">' + eh(c.name) + '</div>';
+    html += '</td>';
+    html += '<td><div class="trunc" title="' + ea(c.vendor) + '">' + (c.vendor ? eh(c.vendor) : '<span style="color:var(--t3)">-</span>') + '</div></td>';
+    html += '<td style="color:var(--t2);font-size:12px">' + (c.contact ? eh(c.contact) : '<span style="color:var(--t3)">-</span>') + '</td>';
+    html += '<td>' + periodHtml + '</td>';
+    html += '<td style="text-align:right;font-size:12px;white-space:nowrap">' + (c.contractAmount ? eh(fmtMoneyText(c.contractAmount)) : '<span style="color:var(--t3)">-</span>') + '</td>';
+    html += '<td style="text-align:right;font-size:12px;white-space:nowrap">' + (c.monthlyAmount ? eh(fmtMoneyText(c.monthlyAmount)) : '<span style="color:var(--t3)">-</span>') + '</td>';
+    html += '<td style="font-size:12px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + ea(c.payDayText) + '">' + (c.payDayText ? eh(c.payDayText) : '<span style="color:var(--t3)">-</span>') + '</td>';
+    html += '<td style="font-size:12px">' + (c.evidenceType ? eh(c.evidenceType) : '<span style="color:var(--t3)">-</span>') + '</td>';
+    html += '<td>' + (c.managementMemo && c.managementMemo.trim() ? '<span class="bdg bdg-memo">메모</span>' : '') + '</td>';
+    html += '</tr>';
+  });
+  tb.innerHTML = html;
+}
+
+function renderCards(list) {
+  var mc = document.getElementById('mcards');
+  var html = '';
+  list.forEach(function(c) {
+    var st = c.expireStatus || '-';
+    var bc = expClass(st);
+    var ptxt = fmtPeriod(c);
+
+    html += '<div class="m-card" onclick="openDetail(\'' + c.id + '\')">';
+    html += '<div class="mc-top"><div class="mc-name">' + eh(c.name) + '</div>';
+    html += '<div class="mc-bdgs">' + expBadgeHtml(st);
+    html += '<span class="bdg ' + (c.category==='공공요금'?'bdg-pub':'bdg-ann') + '">' + eh(c.category||'연간계약') + '</span>';
+    if (c.managementMemo && c.managementMemo.trim()) html += '<span class="bdg bdg-memo">메모</span>';
+    html += '</div></div>';
+    if (c.vendor) html += '<div class="mc-vendor">' + eh(c.vendor) + '</div>';
+    html += '<div class="mc-meta">';
+    if (c.contact) html += '<div><span class="mc-ml">연락처 </span><span class="mc-mv">' + eh(c.contact) + '</span></div>';
+    if (ptxt && ptxt !== '-') html += '<div><span class="mc-ml">계약기간 </span><span class="mc-mv">' + eh(ptxt) + '</span></div>';
+    if (c.monthlyAmount) html += '<div><span class="mc-ml">월지급 </span><span class="mc-mv">' + eh(fmtMoneyText(c.monthlyAmount)) + '</span></div>';
+    if (c.payDayText) html += '<div><span class="mc-ml">지급일 </span><span class="mc-mv">' + eh(c.payDayText) + '</span></div>';
+    if (c.evidenceType) html += '<div><span class="mc-ml">증빙 </span><span class="mc-mv">' + eh(c.evidenceType) + '</span></div>';
+    html += '</div></div>';
+  });
+  mc.innerHTML = html;
+}
+
+// ================================================================
+// MONEY FORMAT
+// ================================================================
+function fmtMoneyText(v) {
+  if (v === null || v === undefined) return '';
+  var raw = String(v).trim();
+  if (!raw) return '';
+  // 숫자로만 된 값 또는 콤마가 섞인 숫자만 콤마 처리합니다. 청구금액/실시금액/1L당 등 텍스트는 그대로 둡니다.
+  var compact = raw.replace(/,/g, '');
+  if (/^-?\d+(\.\d+)?$/.test(compact)) {
+    var parts = compact.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+  }
+  // 3000000원처럼 숫자+원인 경우도 보기 좋게 처리합니다.
+  var m = compact.match(/^(-?\d+)(원)$/);
+  if (m) return m[1].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + m[2];
+  return raw;
+}
+
+function formatMoneyInput(el) {
+  el.value = fmtMoneyText(el.value);
+}
+
+// ================================================================
+// DETAIL MODAL
+// ================================================================
+function openDetail(id) {
+  // 목록 클릭 시 상세보기 단계를 거치지 않고 바로 수정 가능한 화면을 엽니다.
+  gCurId = id; gIsEdit = true; gIsAdd = false;
+  var c = D.contracts.find(function(x){ return x.id === id; });
+  if (!c) return;
+  document.getElementById('modalTitle').textContent = '계약 수정';
+  document.getElementById('delBtn').style.display = '';
+  document.getElementById('editBtn').style.display = 'none';
+  document.getElementById('saveBtn').style.display = '';
+  document.getElementById('cancelBtn').style.display = '';
+  renderForm(c);
+  document.getElementById('detailOv').classList.add('on');
+}
+
+function openAdd() {
+  gCurId = null; gIsEdit = true; gIsAdd = true;
+  document.getElementById('modalTitle').textContent = '새 계약 추가';
+  document.getElementById('delBtn').style.display = 'none';
+  document.getElementById('editBtn').style.display = 'none';
+  document.getElementById('saveBtn').style.display = '';
+  document.getElementById('cancelBtn').style.display = '';
+  renderForm({ id:'', no: D.contracts.length+1, category:'연간계약', name:'', vendor:'', contact:'',
+    periodType:'기간계약', contractStartDate:'', contractEndDate:'', originalPeriodText:'',
+    contractAmount:'', monthlyAmount:'', payDayText:'', payCycle:'매월', isAutoPay:false,
+    evidenceType:'', originalNote:'', managementMemo:'' });
+  document.getElementById('detailOv').classList.add('on');
+}
+
+function closeDetail() {
+  document.getElementById('detailOv').classList.remove('on');
+  gCurId = null; gIsEdit = false; gIsAdd = false;
+}
+
+function startEdit() {
+  var c = D.contracts.find(function(x){ return x.id === gCurId; });
+  if (!c) return;
+  gIsEdit = true;
+  document.getElementById('modalTitle').textContent = '계약 수정';
+  document.getElementById('editBtn').style.display = 'none';
+  document.getElementById('saveBtn').style.display = '';
+  document.getElementById('cancelBtn').style.display = '';
+  renderForm(c);
+}
+
+function cancelEdit() {
+  closeDetail();
+}
+
+function renderView(c) {
+  var st = c.expireStatus || '-';
+  var bc = expClass(st);
+  var html = '';
+  html += '<div class="dv-badges">';
+  html += expBadgeHtml(st);
+  html += '<span class="bdg ' + (c.category==='공공요금'?'bdg-pub':'bdg-ann') + '">' + eh(c.category) + '</span>';
+  if (c.isAutoPay) html += '<span class="bdg bdg-auto">자동이체</span>';
+  html += '</div>';
+
+  html += '<div class="dv-stitle">기본 정보</div>';
+  html += dvRow('계약명', '<strong>' + eh(c.name) + '</strong>');
+  html += dvRow('계약업체', c.vendor || '-');
+  html += dvRow('연락처', c.contact || '-');
+
+  html += '<div class="dv-stitle" style="margin-top:14px">계약기간</div>';
+  html += dvRow('기간 유형', c.periodType || '-');
+  if (c.contractStartDate) html += dvRow('계약시작일', c.contractStartDate);
+  if (c.contractEndDate)   html += dvRow('계약종료일', '<strong>' + eh(c.contractEndDate) + '</strong>');
+  html += dvRow('자동 표시 계약기간', '<span style="color:var(--t2)">' + eh(fmtPeriod(c)) + '</span>');
+
+  html += '<div class="dv-stitle" style="margin-top:14px">금액 및 지급</div>';
+  html += dvRow('계약금액', c.contractAmount || '-');
+  html += dvRow('월 지급액', c.monthlyAmount || '-');
+  html += dvRow('지급일', c.payDayText || '-');
+  html += dvRow('지급주기', c.payCycle || '-');
+  html += dvRow('자동이체', c.isAutoPay ? '<span class="bdg bdg-auto">자동이체</span>' : '해당 없음');
+  html += dvRow('증빙구분', c.evidenceType || '-');
+
+  html += '<div class="dv-stitle" style="margin-top:14px">비고 및 관리메모</div>';
+  if (c.originalNote) {
+    html += '<div class="dv-row" style="flex-direction:column;gap:4px">';
+    html += '<div class="dv-lbl">비고 (원본)</div>';
+    html += '<div class="note-box">' + eh(c.originalNote) + '</div></div>';
+  }
+  if (c.managementMemo && c.managementMemo.trim()) {
+    html += '<div class="dv-row" style="flex-direction:column;gap:4px;margin-top:6px">';
+    html += '<div class="dv-lbl">관리메모</div>';
+    html += '<div class="memo-box">' + eh(c.managementMemo) + '</div></div>';
+  }
+  if (!c.originalNote && !(c.managementMemo && c.managementMemo.trim())) {
+    html += '<div class="no-data">등록된 비고 및 메모가 없습니다.</div>';
+  }
+
+  document.getElementById('modalBody').innerHTML = html;
+}
+
+function dvRow(lbl, val) {
+  return '<div class="dv-row"><div class="dv-lbl">' + lbl + '</div><div class="dv-val">' + val + '</div></div>';
+}
+
+function renderForm(c) {
+  var isAP = c.isAutoPay ? 'true' : 'false';
+  var dtShow = c.periodType === '기간계약' ? '' : 'display:none';
+
+  var html = '';
+  html += '<div class="f-sec">';
+  html += '<div class="f-sec-ttl">기본 정보</div>';
+  html += '<div class="grid2">';
+  html += fgSel('구분 *', 'fCat', [['연간계약','연간계약'],['공공요금','공공요금']], c.category);
+  html += fgInp('No', 'fNo', 'number', String(c.no||''), '자동');
+  html += '</div>';
+  html += '<div class="grid1" style="margin-top:10px">';
+  html += fgInp('계약명 *', 'fName', 'text', c.name, '계약명을 입력하세요');
+  html += '</div>';
+  html += '<div class="grid2" style="margin-top:10px">';
+  html += fgInp('계약업체', 'fVendor', 'text', c.vendor||'', '업체명');
+  html += fgInp('연락처', 'fContact', 'text', c.contact||'', '전화번호');
+  html += '</div></div>';
+
+  html += '<div class="f-sec">';
+  html += '<div class="f-sec-ttl">계약기간</div>';
+  html += '<div class="grid1">';
+  html += fgSel('기간 유형', 'fPType', [['기간계약','기간계약'],['발생 시','발생 시'],['근무기간','근무기간'],['기간 없음','기간 없음']], c.periodType, 'onPTypeChg()');
+  html += '</div>';
+  html += '<div id="dtFields" style="' + dtShow + '">';
+  html += '<div class="grid2" style="margin-top:10px">';
+  html += fgDate('계약시작일', 'fSDate', c.contractStartDate||'');
+  html += fgDate('계약종료일', 'fEDate', c.contractEndDate||'');
+  html += '</div></div>';
+  html += '<div class="period-preview">계약기간 자동 표시: <strong id="periodPreview">' + eh(fmtPeriod(c)) + '</strong><br><span class="fhint">계약기간은 시작일과 종료일로 자동 생성됩니다.</span></div>';
+  html += '</div>';
+
+  html += '<div class="f-sec">';
+  html += '<div class="f-sec-ttl">금액 및 지급</div>';
+  html += '<div class="grid2">';
+  html += fgInp('계약금액', 'fAmount', 'text', fmtMoneyText(c.contractAmount||''), '예: 1,200,000원', 'formatMoneyInput(this)');
+  html += fgInp('월 지급액', 'fMonthly', 'text', fmtMoneyText(c.monthlyAmount||''), '예: 청구금액, 100,000원', 'formatMoneyInput(this)');
+  html += '</div>';
+  html += '<div class="grid2" style="margin-top:10px">';
+  html += fgInp('지급일', 'fPayday', 'text', c.payDayText||'', '예: 5일 자동이체, 청구 시');
+  html += fgSel('지급주기', 'fCycle', [['매월','매월'],['격월','격월'],['반기','반기'],['연간','연간'],['발생 시','발생 시'],['기타','기타']], c.payCycle||'매월');
+  html += '</div>';
+  html += '<div class="grid2" style="margin-top:10px">';
+  html += fgSel('자동이체', 'fIsAP', [['false','해당 없음'],['true','자동이체']], isAP);
+  html += fgSel('증빙구분', 'fEvid', [['','선택'],['세금계산서','세금계산서'],['계산서','계산서'],['지로','지로'],['고지서','고지서'],['무증빙','무증빙'],['기타','기타']], c.evidenceType||'');
+  html += '</div></div>';
+
+  html += '<div class="f-sec">';
+  html += '<div class="f-sec-ttl">비고 및 관리메모</div>';
+  html += fgTA('비고 (원본 내용)', 'fNote', c.originalNote||'', '엑셀에서 가져온 원본 비고');
+  html += '<div style="margin-top:10px">';
+  html += fgTAHint('관리메모', 'fMemo', c.managementMemo||'', '예: 계약 종료 전 재계약 검토, 담당자 통화 완료 등', '웹앱에서 추가로 작성하는 운영 메모');
+  html += '</div></div>';
+
+  document.getElementById('modalBody').innerHTML = html;
+}
+
+function fgInp(lbl, id, tp, val, ph, onblur) {
+  return '<div class="fg"><label>' + lbl + '</label><input type="' + tp + '" id="' + id + '" class="fc" value="' + ea(val) + '" placeholder="' + ea(ph) + '"' + (onblur ? ' onblur="' + onblur + '"' : '') + '></div>';
+}
+function fgInpHint(lbl, id, tp, val, ph, hint) {
+  return '<div class="fg"><label>' + lbl + '</label><input type="' + tp + '" id="' + id + '" class="fc" value="' + ea(val) + '" placeholder="' + ea(ph) + '"><span class="fhint">' + hint + '</span></div>';
+}
+function fgDate(lbl, id, val) {
+  return '<div class="fg"><label>' + lbl + '</label><input type="date" id="' + id + '" class="fc" value="' + ea(val) + '" oninput="updatePeriodPreview()" onchange="updatePeriodPreview()"></div>';
+}
+function fgSel(lbl, id, opts, sel, onch) {
+  var s = '<div class="fg"><label>' + lbl + '</label><select id="' + id + '" class="fc"' + (onch?' onchange="'+onch+'"':'') + '>';
+  opts.forEach(function(o){ s += '<option value="' + ea(o[0]) + '"' + (o[0]===sel?' selected':'') + '>' + eh(o[1]) + '</option>'; });
+  s += '</select></div>';
+  return s;
+}
+function fgTA(lbl, id, val, ph) {
+  return '<div class="fg"><label>' + lbl + '</label><textarea id="' + id + '" class="fc" placeholder="' + ea(ph) + '">' + eh(val) + '</textarea></div>';
+}
+function fgTAHint(lbl, id, val, ph, hint) {
+  return '<div class="fg"><label>' + lbl + '</label><textarea id="' + id + '" class="fc" placeholder="' + ea(ph) + '">' + eh(val) + '</textarea><span class="fhint">' + hint + '</span></div>';
+}
+
+function onPTypeChg() {
+  var v = document.getElementById('fPType').value;
+  document.getElementById('dtFields').style.display = v === '기간계약' ? '' : 'none';
+  updatePeriodPreview();
+}
+
+function updatePeriodPreview() {
+  var el = document.getElementById('periodPreview');
+  if (!el) return;
+  var ptypeEl = document.getElementById('fPType');
+  var sEl = document.getElementById('fSDate');
+  var eEl = document.getElementById('fEDate');
+  var ptype = ptypeEl ? ptypeEl.value : '기간 없음';
+  var sdate = (ptype === '기간계약' && sEl) ? sEl.value : '';
+  var edate = (ptype === '기간계약' && eEl) ? eEl.value : '';
+  el.textContent = buildPeriodText(ptype, sdate, edate);
+}
+
+function saveContract() {
+  var name = document.getElementById('fName').value.trim();
+  if (!name) { toast('계약명은 필수 항목입니다.', 'err'); document.getElementById('fName').focus(); return; }
+
+  var ptype = document.getElementById('fPType').value;
+  var sdate = ptype === '기간계약' ? (document.getElementById('fSDate').value || '') : '';
+  var edate = ptype === '기간계약' ? (document.getElementById('fEDate').value || '') : '';
+  var exSt = calcExpiry(edate, ptype);
+
+  var data = {
+    no: parseInt(document.getElementById('fNo').value) || 0,
+    category: document.getElementById('fCat').value,
+    name: name,
+    vendor: document.getElementById('fVendor').value.trim(),
+    contact: document.getElementById('fContact').value.trim(),
+    periodType: ptype,
+    contractStartDate: sdate,
+    contractEndDate: edate,
+    originalPeriodText: (gCurId ? ((D.contracts.find(function(c){ return c.id === gCurId; }) || {}).originalPeriodText || '') : '') || buildPeriodText(ptype, sdate, edate),
+    contractAmount: fmtMoneyText(document.getElementById('fAmount').value.trim()),
+    monthlyAmount: fmtMoneyText(document.getElementById('fMonthly').value.trim()),
+    payDayText: document.getElementById('fPayday').value.trim(),
+    payCycle: document.getElementById('fCycle').value,
+    isAutoPay: document.getElementById('fIsAP').value === 'true',
+    evidenceType: document.getElementById('fEvid').value,
+    originalNote: document.getElementById('fNote').value.trim(),
+    managementMemo: document.getElementById('fMemo').value.trim(),
+    expireStatus: exSt,
+    updatedAt: new Date().toISOString()
+  };
+
+  if (gCurId) {
+    var idx = D.contracts.findIndex(function(c){ return c.id === gCurId; });
+    if (idx !== -1) D.contracts[idx] = Object.assign({}, D.contracts[idx], data);
+    toast('저장했습니다.', 'ok');
+  } else {
+    if (!data.no) data.no = D.contracts.reduce(function(mx,c){ return Math.max(mx,c.no||0); }, 0) + 1;
+    var nc = Object.assign({ id: genId(), createdAt: new Date().toISOString() }, data);
+    D.contracts.push(nc);
+    gCurId = nc.id;
+    toast('새 계약을 추가했습니다.', 'ok');
+  }
+
+  saveStorage();
+  renderAll();
+  closeDetail();
+}
+
+function doDelete() {
+  var c = D.contracts.find(function(x){ return x.id === gCurId; });
+  if (!c) return;
+  showConf({
+    ico:'🗑️', title:'계약 삭제',
+    msg: '"' + c.name + '"\n이 계약을 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.',
+    okTxt: '삭제',
+    onOk: function() {
+      D.contracts = D.contracts.filter(function(x){ return x.id !== gCurId; });
+      saveStorage(); renderAll(); closeDetail();
+      toast('삭제했습니다.', 'ok');
+    }
+  });
+}
+
+// ================================================================
+// CONFIRM MODAL
+// ================================================================
+function showConf(opts) {
+  document.getElementById('confIco').textContent = opts.ico || '⚠️';
+  document.getElementById('confTtl').textContent = opts.title || '';
+  document.getElementById('confMsg').textContent = opts.msg || '';
+  document.getElementById('confOk').textContent = opts.okTxt || '확인';
+  document.getElementById('confCancel').textContent = '취소';
+
+  var altBtn = document.getElementById('confAlt');
+  if (opts.altTxt && opts.onAlt) {
+    altBtn.textContent = opts.altTxt;
+    altBtn.style.display = '';
+    confAltCb = opts.onAlt;
+    altBtn.onclick = function() { closeConf(); if(confAltCb) confAltCb(); };
+  } else {
+    altBtn.style.display = 'none';
+    confAltCb = null;
+  }
+
+  confCb = opts.onOk || null;
+  document.getElementById('confOk').onclick = function() { closeConf(); if(confCb) confCb(); };
+  document.getElementById('confCancel').onclick = closeConf;
+
+  document.getElementById('confOv').classList.add('on');
+}
+
+function closeConf() {
+  document.getElementById('confOv').classList.remove('on');
+}
+
+// ================================================================
+// OVERLAY CLICK
+// ================================================================
+function ovClick(el, id) {
+  if (el === event.target) {
+    if (id === 'detailOv') closeDetail();
+    else if (id === 'confOv') closeConf();
+  }
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function toast(msg, type) {
+  var tc = document.getElementById('toasts');
+  var el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  tc.appendChild(el);
+  setTimeout(function() {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .3s';
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }, 3000);
+}
+
+// ================================================================
+// LOADING
+// ================================================================
+function ldg(on) {
+  document.getElementById('ldg').classList.toggle('on', on);
+}
+
+// ================================================================
+// KEYBOARD
+// ================================================================
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('confOv').classList.contains('on')) closeConf();
+    else if (document.getElementById('detailOv').classList.contains('on')) closeDetail();
+  }
+});
+
+// ================================================================
+// UTILS
+// ================================================================
+function genId() {
+  return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+function pad2(n) { return String(n).padStart(2,'0'); }
+
+function fmtDT(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  return d.getFullYear() + '.' + pad2(d.getMonth()+1) + '.' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+
+function fmtDateFile(d) {
+  return d.getFullYear() + pad2(d.getMonth()+1) + pad2(d.getDate());
+}
+
+function eh(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function ea(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
