@@ -326,6 +326,76 @@ textarea.fc{resize:vertical;min-height:72px}
 .spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+
+/* ── V1.4 TABS / OVERVIEW ── */
+.board-tabs{display:flex;align-items:center;gap:22px;border-bottom:1px solid var(--border);margin:0 1px 16px}
+.board-tab{position:relative;border:0;background:transparent;color:var(--t2);font:inherit;font-size:14px;font-weight:500;padding:9px 1px 11px;cursor:pointer}
+.board-tab:hover{color:var(--text)}
+.board-tab.active{color:var(--text);font-weight:600}
+.board-tab.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--blue)}
+.board-tab:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:4px}
+.view-panel{display:none}
+.view-panel.active{display:block}
+.overview-section{margin-bottom:18px}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:9px}
+.section-title{font-size:14px;font-weight:600;color:var(--text)}
+.section-sub{font-size:11.5px;color:var(--t3);margin-top:2px}
+
+/* Annual timeline */
+.timeline-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.timeline-scroll{overflow-x:auto;max-width:100%}
+.timeline-grid{min-width:930px}
+.timeline-header,.timeline-row{display:grid;grid-template-columns:210px minmax(720px,1fr)}
+.timeline-header{border-bottom:1px solid var(--border);background:#fafafb}
+.timeline-name-head{position:sticky;left:0;z-index:5;background:#fafafb;padding:10px 12px;font-size:11.5px;color:var(--t2);font-weight:600;border-right:1px solid var(--border)}
+.timeline-months,.timeline-track{display:grid;grid-template-columns:repeat(12,minmax(60px,1fr));position:relative}
+.timeline-month{display:flex;align-items:center;justify-content:center;min-height:38px;border-right:1px solid var(--border2);font-size:11.5px;color:var(--t2)}
+.timeline-month:last-child{border-right:0}
+.timeline-month.current{background:var(--blue-lt);color:var(--blue-dk);font-weight:600}
+.timeline-row{border-bottom:1px solid var(--border2);min-height:46px}
+.timeline-row:last-child{border-bottom:0}
+.timeline-contract{position:sticky;left:0;z-index:4;background:#fff;padding:8px 12px;border:0;border-right:1px solid var(--border);min-width:0;width:100%;display:flex;flex-direction:column;justify-content:center;cursor:pointer;font:inherit;text-align:left}
+.timeline-contract:hover .timeline-contract-name{color:var(--blue)}
+.timeline-contract-name{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.timeline-contract-meta{font-size:10.5px;color:var(--t3);margin-top:1px;white-space:nowrap}
+.timeline-cell{grid-row:1;border-right:1px solid var(--border2);min-height:45px}
+.timeline-cell.current{background:rgba(37,99,235,.045)}
+.timeline-bar{grid-row:1;align-self:center;height:8px;border-radius:999px;background:#b8c9ee;z-index:2;margin:0 5px;min-width:8px}
+.timeline-bar.ending{background:#f4c49f}
+.timeline-bar.active{background:#8fb0ee}
+.timeline-empty,.overview-empty{padding:22px 16px;text-align:center;color:var(--t3);font-size:12.5px}
+.timeline-foot{padding:8px 12px;border-top:1px solid var(--border2);background:#fcfcfd;color:var(--t3);font-size:11px}
+
+/* Monthly tasks */
+.overview-task-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--r);background:#fff;overflow:hidden}
+.overview-task{display:grid;grid-template-columns:minmax(180px,1fr) auto;align-items:center;gap:14px;padding:11px 13px;border-bottom:1px solid var(--border2)}
+.overview-task:last-child{border-bottom:0}
+.overview-task:hover{background:#fcfcfd}
+.overview-task-main{min-width:0}
+.overview-task-name{display:inline-block;border:0;background:none;padding:0;color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.overview-task-name:hover{color:var(--blue)}
+.overview-task-meta{display:flex;align-items:center;gap:6px;margin-top:3px;color:var(--t3);font-size:11px;flex-wrap:wrap}
+.overview-task-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.overview-check{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:#fff;color:var(--t2);border-radius:7px;padding:5px 8px;font:inherit;font-size:11.5px;cursor:pointer;white-space:nowrap}
+.overview-check:hover{background:#f8fafc;border-color:#cbd5e1}
+.overview-check.done{background:#eefbf4;border-color:#b8e8cc;color:#147a48}
+.overview-check.pending{background:#fff;color:#697180}
+
+/* Upcoming expiry */
+.expiry-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--r);background:#fff;overflow:hidden}
+.expiry-item{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:10px 13px;border:0;border-bottom:1px solid var(--border2);background:#fff;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.expiry-item:last-child{border-bottom:0}
+.expiry-item:hover{background:#fcfcfd}
+.expiry-dday{font-size:12px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.expiry-name{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.expiry-date{font-size:11.5px;color:var(--t2);white-space:nowrap}
+.expiry-state{display:inline-flex;align-items:center;border-radius:999px;padding:2px 7px;font-size:10.5px;font-weight:600;margin-left:7px;background:var(--slate-lt);color:var(--slate)}
+.expiry-state.urgent{background:var(--red-lt);color:#b91c1c}
+.expiry-state.soon{background:var(--orange-lt);color:#c2410c}
+.expiry-state.prepare{background:var(--blue-lt);color:var(--blue-dk)}
+.focus-flash{animation:focusFlash 1.6s ease}
+@keyframes focusFlash{0%,100%{background:inherit}20%,65%{background:#eff6ff}}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   .hdr-acts{width:100%}
@@ -339,6 +409,13 @@ textarea.fc{resize:vertical;min-height:72px}
 }
 @media(max-width:768px){
   .main{padding:12px}
+  .timeline-header,.timeline-row{grid-template-columns:150px minmax(720px,1fr)}
+  .timeline-name-head,.timeline-contract{padding-left:10px;padding-right:10px}
+  .overview-task{grid-template-columns:1fr;gap:8px}
+  .overview-task-actions{justify-content:flex-start}
+  .expiry-item{grid-template-columns:52px minmax(0,1fr)}
+  .expiry-date{grid-column:2}
+  .board-tabs{gap:18px}
   .tbl-wrap{display:none}
   .m-cards{display:block}
   .grid2,.grid3{grid-template-columns:1fr}
@@ -384,7 +461,7 @@ textarea.fc{resize:vertical;min-height:72px}
     <div class="hdr-brand">
       <div class="hdr-brand-line">
         <h1>📅 연간계약보드</h1>
-        <span class="version-badge" title="현재 배포 버전">v1.3</span>
+        <span class="version-badge" title="현재 배포 버전">v1.4</span>
       </div>
       <p>공개·비민감 계약정보를 정리하는 연간 업무 보드 · 서버 DB 저장 없음</p>
     </div>
@@ -443,40 +520,83 @@ textarea.fc{resize:vertical;min-height:72px}
     <span><strong>기관명 입력 없이 사용</strong> · 공개·비민감 업무정보만 정리하세요. 계좌번호, 주민등록번호, 개인 휴대전화, 비밀번호 등 개인정보·민감정보는 입력하지 마세요.</span>
   </div>
 
-  <!-- Dashboard -->
-  <section class="dash-section" aria-label="월간 계약 운영 현황">
-    <div class="dash-head">
-      <div>
-        <div class="dash-title" id="dashMonthTitle">이번 달 계약 운영 현황</div>
-        <div class="dash-sub">목록을 다시 세는 대신, 이번 달에 실제로 확인할 일을 보여줍니다.</div>
+  <!-- View Tabs -->
+  <nav class="board-tabs" role="tablist" aria-label="연간계약보드 보기 전환">
+    <button type="button" class="board-tab active" id="tabOverview" role="tab" aria-selected="true" aria-controls="overviewPanel" onclick="switchTab('overview')">한눈에 보기</button>
+    <button type="button" class="board-tab" id="tabList" role="tab" aria-selected="false" aria-controls="listPanel" onclick="switchTab('list')">계약 목록</button>
+  </nav>
+
+  <!-- Overview -->
+  <section class="view-panel active" id="overviewPanel" role="tabpanel" aria-labelledby="tabOverview">
+    <section class="dash-section overview-section" aria-label="월간 계약 운영 현황">
+      <div class="dash-head">
+        <div>
+          <div class="dash-title" id="dashMonthTitle">이번 달 계약 운영 현황</div>
+          <div class="dash-sub">지금 확인할 일과 종료가 가까운 계약을 먼저 보여줍니다.</div>
+        </div>
       </div>
-    </div>
-    <div class="dash" id="dash">
-      <div class="stat" onclick="setFilter('all')" data-stat="all">
-        <div class="stat-lbl">전체 계약</div>
-        <div class="stat-val"><span id="sTotal">0</span><span class="stat-unit"> 건</span></div>
-        <div class="stat-desc">등록된 전체 계약 현황</div>
+      <div class="dash" id="dash">
+        <div class="stat" onclick="openListFilter('all')" data-stat="all">
+          <div class="stat-lbl">전체 계약</div>
+          <div class="stat-val"><span id="sTotal">0</span><span class="stat-unit"> 건</span></div>
+          <div class="stat-desc">등록된 전체 계약 현황</div>
+        </div>
+        <div class="stat" onclick="openListFilter('월지출')" data-stat="월지출" id="statPayment">
+          <div class="stat-lbl">이번 달 지출</div>
+          <div class="stat-val"><span id="sPayDone">0</span><span class="stat-unit"> / <span id="sPayTotal">0</span> 완료</span></div>
+          <div class="stat-desc" id="sPayDesc">확인 대상 0건</div>
+          <div class="stat-progress" aria-hidden="true"><span id="sPayBar"></span></div>
+        </div>
+        <div class="stat" onclick="openListFilter('월방문')" data-stat="월방문" id="statVisit">
+          <div class="stat-lbl">방문·점검</div>
+          <div class="stat-val"><span id="sVisitDone">0</span><span class="stat-unit"> / <span id="sVisitTotal">0</span> 완료</span></div>
+          <div class="stat-desc" id="sVisitDesc">확인 대상 0건</div>
+          <div class="stat-progress" aria-hidden="true"><span id="sVisitBar"></span></div>
+        </div>
+        <div class="stat" onclick="openListFilter('90일')" data-stat="90일">
+          <div class="stat-lbl">90일 이내 종료</div>
+          <div class="stat-val"><span id="s90">0</span><span class="stat-unit"> 건</span></div>
+          <div class="stat-desc">재계약·종료 확인이 필요한 계약</div>
+        </div>
       </div>
-      <div class="stat" onclick="setFilter('월지출')" data-stat="월지출" id="statPayment">
-        <div class="stat-lbl">이번 달 지출</div>
-        <div class="stat-val"><span id="sPayDone">0</span><span class="stat-unit"> / <span id="sPayTotal">0</span> 완료</span></div>
-        <div class="stat-desc" id="sPayDesc">확인 대상 0건</div>
-        <div class="stat-progress" aria-hidden="true"><span id="sPayBar"></span></div>
+    </section>
+
+    <section class="overview-section" aria-labelledby="timelineTitle">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" id="timelineTitle">연간 계약 흐름</h2>
+          <div class="section-sub" id="timelineSub">계약 시작일과 종료일을 기준으로 1월부터 12월까지 표시합니다.</div>
+        </div>
       </div>
-      <div class="stat" onclick="setFilter('월방문')" data-stat="월방문" id="statVisit">
-        <div class="stat-lbl">방문·점검</div>
-        <div class="stat-val"><span id="sVisitDone">0</span><span class="stat-unit"> / <span id="sVisitTotal">0</span> 완료</span></div>
-        <div class="stat-desc" id="sVisitDesc">확인 대상 0건</div>
-        <div class="stat-progress" aria-hidden="true"><span id="sVisitBar"></span></div>
+      <div class="timeline-card" id="timelineCard">
+        <div class="timeline-scroll"><div class="timeline-grid" id="timelineGrid"></div></div>
+        <div class="timeline-foot" id="timelineFoot">기간이 입력된 계약만 표시합니다.</div>
       </div>
-      <div class="stat" onclick="setFilter('90일')" data-stat="90일">
-        <div class="stat-lbl">90일 이내 종료</div>
-        <div class="stat-val"><span id="s90">0</span><span class="stat-unit"> 건</span></div>
-        <div class="stat-desc">재계약·종료 확인이 필요한 계약</div>
+    </section>
+
+    <section class="overview-section" aria-labelledby="monthTasksTitle">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" id="monthTasksTitle">이번 달 확인할 일</h2>
+          <div class="section-sub" id="monthTasksSub">지출과 방문·점검 확인이 필요한 계약만 모았습니다.</div>
+        </div>
       </div>
-    </div>
+      <div id="overviewTasks"></div>
+    </section>
+
+    <section class="overview-section" aria-labelledby="expiryTitle">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title" id="expiryTitle">곧 끝나는 계약</h2>
+          <div class="section-sub">종료일까지 90일 이내인 계약을 가까운 순서로 보여줍니다.</div>
+        </div>
+      </div>
+      <div id="overviewExpiry"></div>
+    </section>
   </section>
 
+  <!-- Contract List -->
+  <section class="view-panel" id="listPanel" role="tabpanel" aria-labelledby="tabList">
   <!-- Controls -->
   <div class="ctrl">
     <div class="search-row">
@@ -608,10 +728,11 @@ textarea.fc{resize:vertical;min-height:72px}
     </div>
   </div>
 
+  </section>
 </div><!-- /.main -->
 
 <footer class="app-footer">
-  made by <b>senvip</b> · 연간계약보드 v1.3
+  made by <b>senvip</b> · 연간계약보드 v1.4
   <div class="footer-help">서버 DB 저장 없음 · 데이터는 현재 브라우저에 저장됩니다. · 공개·비민감 업무정보만 입력해 주세요. · 엑셀은 업무용 현황 파일, 백업은 앱 상태 보관·복원용 파일입니다.</div>
 </footer>
 
@@ -661,8 +782,8 @@ textarea.fc{resize:vertical;min-height:72px}
 // ================================================================
 // STATE
 // ================================================================
-const SK = 'hakdol_annual_contract_board_v13';
-const LEGACY_STORAGE_KEYS = ['hakdol_annual_contract_board_v12','annual_contract_board_v11_stable'];
+const SK = 'hakdol_annual_contract_board_v14';
+const LEGACY_STORAGE_KEYS = ['hakdol_annual_contract_board_v13','hakdol_annual_contract_board_v12','annual_contract_board_v11_stable'];
 const DEFAULT_DATA = {
   "appName": "연간계약보드",
   "schoolYear": "2026학년도",
@@ -885,6 +1006,7 @@ let gIsEdit = false;
 let gIsAdd = false;
 let confCb = null;
 let confAltCb = null;
+let gActiveTab = 'overview';
 
 // ================================================================
 // INIT
@@ -892,6 +1014,7 @@ let confAltCb = null;
 document.addEventListener('DOMContentLoaded', function() {
   loadStorage();
   renderAll();
+  switchTab('overview', true);
 });
 
 // ================================================================
@@ -940,6 +1063,7 @@ function saveStorage() {
 function saveBoardInfo() {
   D.schoolYear = document.getElementById('schoolYear').value;
   saveStorage();
+  renderOverview();
 }
 
 function normalizeContracts() {
@@ -1930,7 +2054,7 @@ function sortBy(field) {
 function renderAll() {
   normalizeContracts();
   updExpiries();
-  renderDash();
+  renderOverview();
   renderReminderCard();
   renderList();
 }
@@ -1971,6 +2095,205 @@ function toggleMonthlyCheck(ev, id, type) {
 
 function progressPct(done, total) {
   return total ? Math.round(done / total * 100) : 0;
+}
+
+
+function switchTab(tab, silent) {
+  gActiveTab = tab === 'list' ? 'list' : 'overview';
+  var overview = document.getElementById('overviewPanel');
+  var list = document.getElementById('listPanel');
+  var tabOverview = document.getElementById('tabOverview');
+  var tabList = document.getElementById('tabList');
+  if (!overview || !list || !tabOverview || !tabList) return;
+  var isOverview = gActiveTab === 'overview';
+  overview.classList.toggle('active', isOverview);
+  list.classList.toggle('active', !isOverview);
+  tabOverview.classList.toggle('active', isOverview);
+  tabList.classList.toggle('active', !isOverview);
+  tabOverview.setAttribute('aria-selected', isOverview ? 'true' : 'false');
+  tabList.setAttribute('aria-selected', isOverview ? 'false' : 'true');
+  if (!silent) window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function openListFilter(f) {
+  gFilters = f && f !== 'all' ? [f] : [];
+  gSearch = '';
+  var srch = document.getElementById('srchInp');
+  if (srch) srch.value = '';
+  var clr = document.getElementById('srchClr');
+  if (clr) clr.classList.remove('on');
+  updateFilterButtons();
+  renderList();
+  switchTab('list');
+}
+
+function goToContract(id) {
+  gFilters = [];
+  gSearch = '';
+  updateFilterButtons();
+  var srch = document.getElementById('srchInp');
+  if (srch) srch.value = '';
+  var clr = document.getElementById('srchClr');
+  if (clr) clr.classList.remove('on');
+  renderList();
+  switchTab('list', true);
+  setTimeout(function() {
+    var nodes = document.querySelectorAll('[data-id]');
+    var target = null;
+    nodes.forEach(function(n){ if (!target && n.getAttribute('data-id') === id && n.offsetParent !== null) target = n; });
+    if (!target) return;
+    target.classList.remove('focus-flash');
+    void target.offsetWidth;
+    target.classList.add('focus-flash');
+    target.scrollIntoView({behavior:'smooth', block:'center', inline:'nearest'});
+  }, 30);
+}
+
+function timelineYear() {
+  var raw = String(D.schoolYear || '');
+  var m = raw.match(/(20\d{2})/);
+  return m ? parseInt(m[1],10) : new Date().getFullYear();
+}
+
+function contractOverlapMonths(c, year) {
+  if (c.periodType !== '기간계약' || (!c.contractStartDate && !c.contractEndDate)) return null;
+  var yearStart = new Date(year,0,1,0,0,0,0);
+  var yearEnd = new Date(year,11,31,23,59,59,999);
+  var start = c.contractStartDate ? new Date(c.contractStartDate + 'T00:00:00') : yearStart;
+  var end = c.contractEndDate ? new Date(c.contractEndDate + 'T23:59:59') : yearEnd;
+  if (isNaN(start) || isNaN(end) || end < yearStart || start > yearEnd) return null;
+  if (start < yearStart) start = yearStart;
+  if (end > yearEnd) end = yearEnd;
+  return {start:start.getMonth(), end:end.getMonth()};
+}
+
+function expiryDays(c) {
+  if (!c.contractEndDate || c.periodType !== '기간계약') return null;
+  var today = new Date(); today.setHours(0,0,0,0);
+  var end = new Date(c.contractEndDate + 'T00:00:00'); end.setHours(0,0,0,0);
+  if (isNaN(end)) return null;
+  return Math.ceil((end - today) / 86400000);
+}
+
+function timelinePriority(c) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var start = c.contractStartDate ? new Date(c.contractStartDate + 'T00:00:00') : null;
+  var end = c.contractEndDate ? new Date(c.contractEndDate + 'T23:59:59') : null;
+  var active = (!start || start <= today) && (!end || end >= today);
+  if (active) return 0;
+  var dd = expiryDays(c);
+  if (dd !== null && dd >= 0 && dd <= 90) return 1;
+  return 2;
+}
+
+function timelineBarClass(c) {
+  var dd = expiryDays(c);
+  if (dd !== null && dd >= 0 && dd <= 90) return ' ending';
+  if (timelinePriority(c) === 0) return ' active';
+  return '';
+}
+
+function renderTimeline() {
+  var grid = document.getElementById('timelineGrid');
+  if (!grid) return;
+  var year = timelineYear();
+  var current = new Date();
+  var currentMonth = current.getFullYear() === year ? current.getMonth() : -1;
+  var items = D.contracts.map(function(c){ return {c:c, span:contractOverlapMonths(c, year)}; })
+    .filter(function(x){ return !!x.span; })
+    .sort(function(a,b){
+      return timelinePriority(a.c) - timelinePriority(b.c)
+        || ((expiryDays(a.c) === null ? 99999 : Math.max(expiryDays(a.c),0)) - (expiryDays(b.c) === null ? 99999 : Math.max(expiryDays(b.c),0)))
+        || String(a.c.name||'').localeCompare(String(b.c.name||''),'ko');
+    });
+  var months = '';
+  for (var m=0;m<12;m++) months += '<div class="timeline-month ' + (m===currentMonth?'current':'') + '">' + (m+1) + '월</div>';
+  var html = '<div class="timeline-header"><div class="timeline-name-head">계약명</div><div class="timeline-months">' + months + '</div></div>';
+  if (!items.length) {
+    html += '<div class="timeline-empty">' + year + '년에 표시할 계약기간 정보가 없습니다.</div>';
+  } else {
+    items.forEach(function(x){
+      var c=x.c, span=x.span;
+      var cells='';
+      for (var mi=0;mi<12;mi++) cells += '<div class="timeline-cell ' + (mi===currentMonth?'current':'') + '" style="grid-column:'+(mi+1)+';grid-row:1"></div>';
+      var meta = c.category || '';
+      if (c.contractStartDate || c.contractEndDate) meta += (meta?' · ':'') + boardPeriodText(c).replace(/\n/g,' ');
+      html += '<div class="timeline-row">';
+      html += '<button type="button" class="timeline-contract" onclick="goToContract(\'' + c.id + '\')" title="계약 목록에서 보기"><span class="timeline-contract-name">' + eh(c.name||'이름 없음') + '</span><span class="timeline-contract-meta">' + eh(meta) + '</span></button>';
+      html += '<div class="timeline-track">' + cells + '<div class="timeline-bar' + timelineBarClass(c) + '" style="grid-column:' + (span.start+1) + ' / ' + (span.end+2) + '" title="' + ea(fmtPeriod(c)) + '"></div></div>';
+      html += '</div>';
+    });
+  }
+  grid.innerHTML = html;
+  var sub = document.getElementById('timelineSub');
+  if (sub) sub.textContent = year + '년 1월부터 12월까지 계약기간을 표시합니다.';
+  var foot = document.getElementById('timelineFoot');
+  if (foot) foot.textContent = '기간이 입력된 계약 ' + items.length + '건 표시 · 현재 월은 옅게 강조됩니다.';
+}
+
+function overviewCheckHtml(c, type, label) {
+  var enabled = type === 'payment' ? c.monthlyPaymentCheck : c.monthlyVisitCheck;
+  if (!enabled) return '';
+  var done = isMonthlyDone(c,type);
+  return '<button type="button" class="overview-check ' + (done?'done':'pending') + '" onclick="toggleMonthlyCheck(event,\'' + c.id + '\',\'' + type + '\')">' + label + ' ' + (done?'✓ 완료':'○ 확인 필요') + '</button>';
+}
+
+function renderOverviewTasks() {
+  var wrap = document.getElementById('overviewTasks');
+  if (!wrap) return;
+  var items = D.contracts.filter(function(c){ return isRelevantThisMonth(c) && (c.monthlyPaymentCheck || c.monthlyVisitCheck); });
+  items.sort(function(a,b){
+    var ap = (a.monthlyPaymentCheck && !isMonthlyDone(a,'payment')) || (a.monthlyVisitCheck && !isMonthlyDone(a,'visit'));
+    var bp = (b.monthlyPaymentCheck && !isMonthlyDone(b,'payment')) || (b.monthlyVisitCheck && !isMonthlyDone(b,'visit'));
+    return (ap===bp?0:ap?-1:1) || String(a.name||'').localeCompare(String(b.name||''),'ko');
+  });
+  if (!items.length) {
+    wrap.innerHTML = '<div class="overview-empty">' + currentMonthLabel() + '에 확인할 지출·방문 항목이 없습니다.</div>';
+    return;
+  }
+  var html='<div class="overview-task-list">';
+  items.forEach(function(c){
+    var p=overviewCheckHtml(c,'payment','지출');
+    var v=overviewCheckHtml(c,'visit','방문·점검');
+    html += '<div class="overview-task"><div class="overview-task-main"><button type="button" class="overview-task-name" onclick="goToContract(\'' + c.id + '\')">' + eh(c.name||'이름 없음') + '</button><div class="overview-task-meta"><span>' + eh(c.category||'') + '</span>' + (c.payDayText?'<span>·</span><span>'+eh(c.payDayText)+'</span>':'') + '</div></div><div class="overview-task-actions">' + p + v + '</div></div>';
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+  var sub=document.getElementById('monthTasksSub');
+  if (sub) sub.textContent=currentMonthLabel() + ' 지출·방문·점검 대상 ' + items.length + '건';
+}
+
+function expiryStateInfo(days) {
+  if (days <= 30) return {label:'매우 임박', cls:'urgent'};
+  if (days <= 60) return {label:'임박', cls:'soon'};
+  return {label:'준비', cls:'prepare'};
+}
+
+function renderOverviewExpiry() {
+  var wrap=document.getElementById('overviewExpiry');
+  if (!wrap) return;
+  var items=D.contracts.map(function(c){return {c:c,days:expiryDays(c)};})
+    .filter(function(x){return x.days!==null && x.days>=0 && x.days<=90;})
+    .sort(function(a,b){return a.days-b.days || String(a.c.name||'').localeCompare(String(b.c.name||''),'ko');});
+  if (!items.length) {
+    wrap.innerHTML='<div class="overview-empty">90일 이내 종료 예정인 계약이 없습니다.</div>';
+    return;
+  }
+  var html='<div class="expiry-list">';
+  items.forEach(function(x){
+    var st=expiryStateInfo(x.days);
+    var dday=x.days===0?'D-DAY':'D-'+x.days;
+    html += '<button type="button" class="expiry-item" onclick="goToContract(\'' + x.c.id + '\')"><span class="expiry-dday">' + dday + '</span><span class="expiry-name">' + eh(x.c.name||'이름 없음') + '<span class="expiry-state ' + st.cls + '">' + st.label + '</span></span><span class="expiry-date">' + eh(fmtKDate(x.c.contractEndDate)) + ' 종료</span></button>';
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+}
+
+function renderOverview() {
+  renderDash();
+  renderTimeline();
+  renderOverviewTasks();
+  renderOverviewExpiry();
 }
 
 function renderDash() {
@@ -2108,7 +2431,7 @@ function renderCards(list) {
     var bc = expClass(st);
     var ptxt = boardPeriodText(c).replace(/\n/g, ' / ');
 
-    html += '<div class="m-card" onclick="openDetail(\'' + c.id + '\')">';
+    html += '<div class="m-card" data-id="' + ea(c.id) + '" onclick="openDetail(\'' + c.id + '\')">';
     html += '<div class="mc-top"><div><div class="mc-bdgs">' + (c.category === '공공요금' ? '<span class="bdg bdg-pub">공공요금</span>' : '<span class="bdg bdg-ann">연간계약</span>') + '</div><div class="mc-name" style="margin-top:5px">' + eh(c.name) + '</div></div>';
     html += '<div class="mc-bdgs">' + expBadgeHtml(st) + '</div></div>';
     if (c.vendor) html += '<div class="mc-vendor">' + eh(c.vendor) + '</div>';
