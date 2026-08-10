@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>연간계약보드 - 공공요금·연간계약 현황 관리 보드</title>
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<title>연간계약보드 - 연간계약 운영 현황 보드</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --blue:#3182f6;--blue-lt:#ebf3ff;--blue-dk:#1b64da;
-  --bg:#f5f5f7;--card:#fff;--border:#e5e7eb;--border2:#f0f0f0;
-  --text:#191f28;--t2:#6b7684;--t3:#adb5bd;
+  --blue:#2563eb;--blue-lt:#eff6ff;--blue-dk:#1d4ed8;
+  --bg:#f7f7f8;--card:#fff;--border:#e6e7eb;--border2:#f0f1f3;
+  --text:#202124;--t2:#6b7280;--t3:#a1a1aa;
   --green:#05c072;--green-lt:#e8faf3;
   --red:#ef4444;--red-lt:#fee2e2;
   --orange:#f97316;--orange-lt:#fff7ed;
@@ -22,9 +23,9 @@
   --purple:#7c3aed;--purple-lt:#f5f3ff;
   --yellow-bg:#fefce8;--yellow-tx:#a16207;
   --slate:#475569;--slate-lt:#f1f5f9;
-  --r:12px;--rs:8px;--rx:6px;
+  --r:10px;--rs:8px;--rx:7px;
 }
-body{font-family:'Pretendard','SUIT',-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;font-size:14px;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);line-height:1.55;font-size:14px;letter-spacing:-.01em;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
@@ -33,7 +34,7 @@ body{font-family:'Pretendard','SUIT',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .hdr{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;position:sticky;top:0;z-index:100}
 .hdr-in{max-width:1440px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:10px 0;flex-wrap:wrap}
 .hdr-brand{flex:1;min-width:180px}
-.hdr-brand h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.hdr-brand h1{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-.25px}
 .hdr-brand p{font-size:11px;color:var(--t2);margin-top:1px}
 .hdr-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
 .hdr-main-acts,.hdr-sub-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -44,7 +45,7 @@ body{font-family:'Pretendard','SUIT',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .version-badge{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:999px;background:var(--slate-lt);border:1px solid var(--border);color:var(--slate);font-size:11px;font-weight:600;letter-spacing:-.1px;white-space:nowrap}
 
 /* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rs);border:1px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit;line-height:1}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,border-color .15s,color .15s;white-space:nowrap;font-family:inherit;line-height:1}
 .btn:hover{background:#f8f9fa}
 .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn-primary:hover{background:var(--blue-dk);border-color:var(--blue-dk)}
@@ -103,27 +104,31 @@ body{font-family:'Pretendard','SUIT',-apple-system,BlinkMacSystemFont,'Segoe UI'
 /* ── MAIN ── */
 .main{max-width:1440px;margin:0 auto;padding:16px 20px}
 
-/* ── SCHOOL INFO BAR ── */
-.school-bar{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.school-bar label{font-size:12px;color:var(--t2);font-weight:600;white-space:nowrap}
-.school-bar input{border:1px solid var(--border);border-radius:var(--rx);padding:5px 9px;font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s}
-.school-bar input:focus{border-color:var(--blue)}
-.school-bar .last-upd{margin-left:auto;font-size:11px;color:var(--t3)}
+/* ── BOARD META ── */
+.board-meta{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.board-meta label{font-size:12px;color:var(--t2);font-weight:600;white-space:nowrap}
+.board-meta input{border:1px solid var(--border);border-radius:var(--rx);padding:6px 9px;font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s;width:112px;background:#fff}
+.board-meta input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.board-meta .last-upd{margin-left:auto;font-size:11px;color:var(--t3)}
+.privacy-note{display:flex;align-items:flex-start;gap:6px;margin:0 2px 16px;color:var(--t3);font-size:11.5px;line-height:1.55}
+.privacy-note strong{color:var(--t2);font-weight:600}
 
 /* ── DASHBOARD ── */
-.dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:14px}
-.stat{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .15s;position:relative}
-.stat:hover{border-color:var(--blue);background:var(--blue-lt)}
-.stat.active{border-color:var(--blue);background:var(--blue-lt)}
-.stat-lbl{font-size:11px;color:var(--t2);font-weight:600;margin-bottom:6px}
-.stat-val{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.dash-section{margin-bottom:14px}
+.dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:8px;padding:0 1px}
+.dash-title{font-size:13px;font-weight:600;color:var(--text)}
+.dash-sub{font-size:11.5px;color:var(--t3);margin-top:2px}
+.dash{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px 15px;cursor:pointer;transition:background .15s,border-color .15s;position:relative;min-height:112px}
+.stat:hover{border-color:#cbd5e1;background:#fcfcfd}
+.stat.active{border-color:#93b4f8;background:var(--blue-lt)}
+.stat-lbl{font-size:12px;color:var(--t2);font-weight:600;margin-bottom:8px}
+.stat-val{font-size:24px;font-weight:600;letter-spacing:-.6px;color:var(--text)}
 .stat-unit{font-size:13px;font-weight:400;color:var(--t2)}
-.stat.c-blue .stat-val{color:var(--blue)}
-.stat.c-green .stat-val{color:var(--green)}
-.stat.c-red .stat-val{color:var(--red)}
-.stat.c-amber .stat-val{color:var(--amber)}
-.stat.c-purple .stat-val{color:var(--purple)}
-.stat.c-slate .stat-val{color:var(--slate)}
+.stat-desc{margin-top:6px;font-size:11.5px;color:var(--t3);line-height:1.4}
+.stat-progress{height:5px;background:#eef0f3;border-radius:999px;overflow:hidden;margin-top:9px}
+.stat-progress > span{display:block;height:100%;background:var(--blue);border-radius:inherit;width:0;transition:width .2s ease}
+.stat.is-complete .stat-progress > span{background:var(--green)}
 
 /* ── CONTROLS ── */
 .ctrl{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
@@ -174,24 +179,21 @@ body{font-family:'Pretendard','SUIT',-apple-system,BlinkMacSystemFont,'Segoe UI'
 .ctbl .tr-exp:hover td{background:#fff1f2}
 .ctbl .tr-90 td{background:#fffbeb}
 .ctbl .tr-90:hover td{background:#fff7d6}
+.ctbl{min-width:1420px}
 .ctbl th:nth-child(1),.ctbl td:nth-child(1){width:78px}
-.ctbl th:nth-child(2),.ctbl td:nth-child(2){width:72px}
-.ctbl th:nth-child(3),.ctbl td:nth-child(3){width:auto;min-width:260px}
-.ctbl th:nth-child(4),.ctbl td:nth-child(4){width:96px}
-.ctbl th:nth-child(5),.ctbl td:nth-child(5){width:92px}
-.ctbl th:nth-child(6),.ctbl td:nth-child(6){width:128px}
-.ctbl th:nth-child(7),.ctbl td:nth-child(7){width:96px}
-.ctbl th:nth-child(8),.ctbl td:nth-child(8){width:104px}
+.ctbl th:nth-child(2),.ctbl td:nth-child(2){width:auto;min-width:250px}
+.ctbl th:nth-child(3),.ctbl td:nth-child(3){width:120px}
+.ctbl th:nth-child(4),.ctbl td:nth-child(4){width:108px}
+.ctbl th:nth-child(5),.ctbl td:nth-child(5){width:138px}
+.ctbl th:nth-child(6),.ctbl td:nth-child(6){width:110px}
+.ctbl th:nth-child(7),.ctbl td:nth-child(7){width:110px}
+.ctbl th:nth-child(8),.ctbl td:nth-child(8){width:98px}
 .ctbl th:nth-child(9),.ctbl td:nth-child(9){width:96px}
-.ctbl th:nth-child(10),.ctbl td:nth-child(10){width:92px}
-.ctbl th:nth-child(11),.ctbl td:nth-child(11){width:180px}
-.ctbl td:nth-child(7){color:#334155!important;font-weight:500}
-.ctbl td:nth-child(8){color:#1f2937!important;font-weight:500}
-.ctbl td:nth-child(5),
-.ctbl td:nth-child(6),
-.ctbl td:nth-child(9),
-.ctbl td:nth-child(10),
-.ctbl td:nth-child(11){color:#475569}
+.ctbl th:nth-child(10),.ctbl td:nth-child(10){width:86px}
+.ctbl th:nth-child(11),.ctbl td:nth-child(11){width:160px}
+.ctbl th:nth-child(12),.ctbl td:nth-child(12){width:84px}
+.ctbl td:nth-child(6),.ctbl td:nth-child(7){color:#334155!important;font-weight:500}
+.ctbl td:nth-child(4),.ctbl td:nth-child(5),.ctbl td:nth-child(8),.ctbl td:nth-child(9),.ctbl td:nth-child(11){color:#475569}
 .name-cell{font-size:14.5px;font-weight:500;line-height:1.4;letter-spacing:-.01em;color:#111827;max-width:280px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;word-break:keep-all}
 .name-memo{margin-top:4px;font-size:12.5px;line-height:1.35;color:#64748b;font-weight:400;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all}
 .cat-empty{color:#cbd5e1;font-size:12px}
@@ -249,10 +251,10 @@ body{font-family:'Pretendard','SUIT',-apple-system,BlinkMacSystemFont,'Segoe UI'
 /* ── MODAL ── */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .ov.on{display:flex}
-.modal{background:#fff;border-radius:var(--r);width:100%;max-width:700px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(15,23,42,.16);border:1px solid rgba(229,231,235,.9)}
 .modal.sm{max-width:420px}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
-.modal-hdr h3{font-size:15px;font-weight:700}
+.modal-hdr h3{font-size:15px;font-weight:600}
 .modal-cls{background:none;border:none;cursor:pointer;font-size:18px;color:var(--t2);padding:3px;line-height:1}
 .modal-cls:hover{color:var(--text)}
 .modal-body{overflow-y:auto;padding:18px;flex:1}
@@ -262,22 +264,36 @@ body{font-family:'Pretendard','SUIT',-apple-system,BlinkMacSystemFont,'Segoe UI'
 
 /* ── FORM ── */
 .f-sec{margin-bottom:18px}
-.f-sec-ttl{font-size:12px;font-weight:700;color:var(--t2);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.3px}
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg label{font-size:12px;font-weight:600;color:var(--t2)}
+.f-sec-ttl{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);letter-spacing:-.01em}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:12px;font-weight:600;color:#525866}
 .fg .req{color:var(--red)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .grid1{display:grid;grid-template-columns:1fr;gap:10px}
 .sp2{grid-column:span 2}
 .sp3{grid-column:span 3}
-.fc{padding:8px 11px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s;background:#fff;width:100%}
+.fc{padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;background:#fff;width:100%}
 select.fc{appearance:none;-webkit-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 14 14' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 5.25L7 8.25L10 5.25' fill='none' stroke='%236b7684' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;background-size:14px 14px}
-.fc:focus{border-color:var(--blue)}
+.fc:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
 textarea.fc{resize:vertical;min-height:72px}
-.fhint{font-size:11px;color:var(--t3)}
+.fhint{font-size:11.5px;color:var(--t3);line-height:1.5}
 .period-preview{margin-top:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);background:#f8fafc;color:var(--t2);font-size:13px}
 .period-preview strong{color:var(--text);font-weight:700}
+
+.check-stack{display:flex;flex-direction:column;gap:8px}
+.check-row{display:flex;align-items:flex-start;gap:9px;padding:10px 11px;border:1px solid var(--border);border-radius:8px;background:#fcfcfd}
+.check-row input{margin-top:2px;width:16px;height:16px;accent-color:var(--blue)}
+.check-copy{display:flex;flex-direction:column;gap:2px}
+.check-copy b{font-size:13px;font-weight:600;color:var(--text)}
+.check-copy span{font-size:11.5px;color:var(--t3)}
+.month-checks{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.month-btn{border:1px solid var(--border);background:#fff;border-radius:7px;padding:4px 7px;font:inherit;font-size:11px;color:var(--t2);cursor:pointer;white-space:nowrap;line-height:1.2}
+.month-btn:hover{border-color:#cbd5e1;background:#f8fafc}
+.month-btn.done{background:#eefbf4;border-color:#b8e8cc;color:#147a48}
+.month-btn.pending{background:#fff;border-color:#dfe2e7;color:#697180}
+.month-none{font-size:11px;color:#c5c9d0}
+.mc-checks{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
 
 /* ── DETAIL VIEW ── */
 .dv-badges{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
@@ -345,6 +361,13 @@ textarea.fc{resize:vertical;min-height:72px}
   .reminder-head{align-items:flex-start;flex-direction:column}
 }
 
+@media(max-width:760px){
+  .dash{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dash-head{align-items:flex-start;flex-direction:column}
+  .board-meta .last-upd{width:100%;margin-left:0}
+  .date-pair{grid-template-columns:1fr!important}
+  .modal{max-width:100%}
+}
 </style>
 </head>
 <body>
@@ -361,9 +384,9 @@ textarea.fc{resize:vertical;min-height:72px}
     <div class="hdr-brand">
       <div class="hdr-brand-line">
         <h1>📅 연간계약보드</h1>
-        <span class="version-badge" title="현재 배포 버전">v1.1</span>
+        <span class="version-badge" title="현재 배포 버전">v1.3</span>
       </div>
-      <p>공공요금·연간계약 현황 관리 보드 · 외부 전송 없음</p>
+      <p>공개·비민감 계약정보를 정리하는 연간 업무 보드 · 서버 DB 저장 없음</p>
     </div>
     <div class="hdr-acts">
       <div class="hdr-main-acts">
@@ -409,46 +432,50 @@ textarea.fc{resize:vertical;min-height:72px}
 <!-- Main -->
 <div class="main">
 
-  <!-- School Info Bar -->
-  <div class="school-bar">
-    <label>학교명</label>
-    <input type="text" id="schoolName" placeholder="○○초등학교" style="width:180px" oninput="saveSchoolInfo()">
-    <label style="margin-left:8px">학년도</label>
-    <input type="text" id="schoolYear" placeholder="2026학년도" style="width:110px" oninput="saveSchoolInfo()">
+  <!-- Board Meta -->
+  <div class="board-meta">
+    <label for="schoolYear">학년도</label>
+    <input type="text" id="schoolYear" placeholder="2026학년도" oninput="saveBoardInfo()">
     <span class="last-upd" id="lastUpd"></span>
+  </div>
+  <div class="privacy-note" role="note">
+    <span aria-hidden="true">🔐</span>
+    <span><strong>기관명 입력 없이 사용</strong> · 공개·비민감 업무정보만 정리하세요. 계좌번호, 주민등록번호, 개인 휴대전화, 비밀번호 등 개인정보·민감정보는 입력하지 마세요.</span>
   </div>
 
   <!-- Dashboard -->
-  <div class="dash" id="dash">
-    <div class="stat" onclick="setFilter('all')" data-stat="all">
-      <div class="stat-lbl">총 계약 건수</div>
-      <div class="stat-val"><span id="sTotal">0</span><span class="stat-unit"> 건</span></div>
+  <section class="dash-section" aria-label="월간 계약 운영 현황">
+    <div class="dash-head">
+      <div>
+        <div class="dash-title" id="dashMonthTitle">이번 달 계약 운영 현황</div>
+        <div class="dash-sub">목록을 다시 세는 대신, 이번 달에 실제로 확인할 일을 보여줍니다.</div>
+      </div>
     </div>
-    <div class="stat c-green" onclick="setFilter('공공요금')" data-stat="공공요금">
-      <div class="stat-lbl">공공요금</div>
-      <div class="stat-val"><span id="sPub">0</span><span class="stat-unit"> 건</span></div>
+    <div class="dash" id="dash">
+      <div class="stat" onclick="setFilter('all')" data-stat="all">
+        <div class="stat-lbl">전체 계약</div>
+        <div class="stat-val"><span id="sTotal">0</span><span class="stat-unit"> 건</span></div>
+        <div class="stat-desc">등록된 전체 계약 현황</div>
+      </div>
+      <div class="stat" onclick="setFilter('월지출')" data-stat="월지출" id="statPayment">
+        <div class="stat-lbl">이번 달 지출</div>
+        <div class="stat-val"><span id="sPayDone">0</span><span class="stat-unit"> / <span id="sPayTotal">0</span> 완료</span></div>
+        <div class="stat-desc" id="sPayDesc">확인 대상 0건</div>
+        <div class="stat-progress" aria-hidden="true"><span id="sPayBar"></span></div>
+      </div>
+      <div class="stat" onclick="setFilter('월방문')" data-stat="월방문" id="statVisit">
+        <div class="stat-lbl">방문·점검</div>
+        <div class="stat-val"><span id="sVisitDone">0</span><span class="stat-unit"> / <span id="sVisitTotal">0</span> 완료</span></div>
+        <div class="stat-desc" id="sVisitDesc">확인 대상 0건</div>
+        <div class="stat-progress" aria-hidden="true"><span id="sVisitBar"></span></div>
+      </div>
+      <div class="stat" onclick="setFilter('90일')" data-stat="90일">
+        <div class="stat-lbl">90일 이내 종료</div>
+        <div class="stat-val"><span id="s90">0</span><span class="stat-unit"> 건</span></div>
+        <div class="stat-desc">재계약·종료 확인이 필요한 계약</div>
+      </div>
     </div>
-    <div class="stat c-slate" onclick="setFilter('연간계약')" data-stat="연간계약">
-      <div class="stat-lbl">연간계약</div>
-      <div class="stat-val"><span id="sAnn">0</span><span class="stat-unit"> 건</span></div>
-    </div>
-    <div class="stat c-purple" onclick="setFilter('자동이체')" data-stat="자동이체">
-      <div class="stat-lbl">자동이체</div>
-      <div class="stat-val"><span id="sAuto">0</span><span class="stat-unit"> 건</span></div>
-    </div>
-    <div class="stat c-amber" onclick="setFilter('90일')" data-stat="90일">
-      <div class="stat-lbl">90일 이내 만료</div>
-      <div class="stat-val"><span id="s90">0</span><span class="stat-unit"> 건</span></div>
-    </div>
-    <div class="stat c-red" onclick="setFilter('종료됨')" data-stat="종료됨">
-      <div class="stat-lbl">종료됨</div>
-      <div class="stat-val"><span id="sExp">0</span><span class="stat-unit"> 건</span></div>
-    </div>
-    <div class="stat" onclick="setFilter('메모')" data-stat="메모">
-      <div class="stat-lbl">메모 있음</div>
-      <div class="stat-val"><span id="sMemo">0</span><span class="stat-unit"> 건</span></div>
-    </div>
-  </div>
+  </section>
 
   <!-- Controls -->
   <div class="ctrl">
@@ -457,7 +484,7 @@ textarea.fc{resize:vertical;min-height:72px}
         <span class="search-ico">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
-        <input type="text" id="srchInp" class="search-inp" placeholder="계약명, 업체, 증빙구분, 메모 등 검색..." oninput="handleSearch(this.value)">
+        <input type="text" id="srchInp" class="search-inp" placeholder="계약명, 업체, 증빙구분, 메모 등 검색..." autocomplete="off" oninput="handleSearch(this.value)">
         <button class="search-clr" id="srchClr" onclick="clearSearch()">✕</button>
       </div>
     </div>
@@ -468,6 +495,8 @@ textarea.fc{resize:vertical;min-height:72px}
         <button class="chip" data-f="공공요금" onclick="setFilter('공공요금')">공공요금</button>
         <button class="chip" data-f="연간계약" onclick="setFilter('연간계약')">연간계약</button>
         <button class="chip" data-f="자동이체" onclick="setFilter('자동이체')">자동이체</button>
+        <button class="chip" data-f="월지출미완료" onclick="setFilter('월지출미완료')">지출 확인 필요</button>
+        <button class="chip" data-f="월방문미완료" onclick="setFilter('월방문미완료')">방문 확인 필요</button>
         <button class="chip" data-f="메모" onclick="setFilter('메모')">메모 있음</button>
         <button class="chip filter-toggle" id="detailFilterBtn" onclick="toggleDetailFilters()" aria-expanded="false">상세필터 ▾</button>
         <button class="chip chip-rst" onclick="resetAll()">보기 초기화</button>
@@ -541,17 +570,18 @@ textarea.fc{resize:vertical;min-height:72px}
       <table class="ctbl">
         <thead>
           <tr>
-            <th onclick="sortBy('expireStatus')">만료상태</th>
             <th onclick="sortBy('category')">구분</th>
             <th onclick="sortBy('name')">계약명</th>
             <th onclick="sortBy('vendor')">계약업체</th>
-            <th>연락처</th>
+            <th>업체 대표 연락처</th>
             <th onclick="sortBy('contractEndDate')">계약기간</th>
             <th onclick="sortBy('contractAmount')">계약금액</th>
             <th onclick="sortBy('monthlyAmount')">월 지급액</th>
             <th onclick="sortBy('payDayText')">지급일</th>
             <th onclick="sortBy('evidenceType')">증빙구분</th>
+            <th>이번 달</th>
             <th onclick="sortBy('memo')">메모</th>
+            <th onclick="sortBy('expireStatus')">만료상태</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -568,8 +598,8 @@ textarea.fc{resize:vertical;min-height:72px}
       <p id="emptyMsg">기본틀을 다시 보려면 새로 받은 파일을 열거나, 엑셀 파일을 불러와주세요.</p>
       <div class="empty-steps" id="emptySteps">
         <div class="empty-step"><b>1. 엑셀 불러오기</b><span>기존 계약현황표를 선택하면 브라우저 안에서만 읽습니다.</span></div>
-        <div class="empty-step"><b>2. 현황 자동 정리</b><span>업체·기간·금액·증빙·만료상태를 목록으로 보여줍니다.</span></div>
-        <div class="empty-step"><b>3. 메모로 관리</b><span>재계약 검토, 담당자 통화 등 운영 메모를 남깁니다.</span></div>
+        <div class="empty-step"><b>2. 현황 자동 정리</b><span>업체·기간·금액과 함께 이번 달 지출·방문 확인 상태를 보여줍니다.</span></div>
+        <div class="empty-step"><b>3. 메모로 관리</b><span>재계약 검토 등 비민감 운영 메모를 남깁니다.</span></div>
       </div>
       <button class="btn btn-primary" onclick="triggerExcelInput()">엑셀 불러오기</button>
       &nbsp;
@@ -581,8 +611,8 @@ textarea.fc{resize:vertical;min-height:72px}
 </div><!-- /.main -->
 
 <footer class="app-footer">
-  made by <b>senvip</b> · 연간계약보드 v1.1
-  <div class="footer-help">외부 전송 없음 · 데이터는 현재 브라우저에 저장됩니다. · 엑셀은 업무용 현황 파일, 백업은 앱 상태 보관·복원용 파일입니다.</div>
+  made by <b>senvip</b> · 연간계약보드 v1.3
+  <div class="footer-help">서버 DB 저장 없음 · 데이터는 현재 브라우저에 저장됩니다. · 공개·비민감 업무정보만 입력해 주세요. · 엑셀은 업무용 현황 파일, 백업은 앱 상태 보관·복원용 파일입니다.</div>
 </footer>
 
 <!-- Detail/Edit Modal -->
@@ -631,669 +661,19 @@ textarea.fc{resize:vertical;min-height:72px}
 // ================================================================
 // STATE
 // ================================================================
-const SK = 'annual_contract_board_v11_stable';
+const SK = 'hakdol_annual_contract_board_v13';
+const LEGACY_STORAGE_KEYS = ['hakdol_annual_contract_board_v12','annual_contract_board_v11_stable'];
 const DEFAULT_DATA = {
   "appName": "연간계약보드",
   "schoolYear": "2026학년도",
-  "schoolName": "",
   "contracts": [
     {
       "id": "template-001",
       "no": 1,
       "category": "연간계약",
-      "name": "학교장 직책급 업무수행경비",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "근무기간",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "근무기간",
-      "contractAmount": "3000000",
-      "monthlyAmount": "250000",
-      "payDayText": "매월 1일",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "무증빙",
-      "evidenceRaw": "무증빙",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-002",
-      "no": 2,
-      "category": "공공요금",
-      "name": "학교장터(S2B) 수수료",
-      "vendor": "-",
+      "name": "정수기 유지관리",
+      "vendor": "",
       "contact": "",
-      "periodType": "발생 시",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "발생 시",
-      "contractAmount": "0",
-      "monthlyAmount": "청구금액",
-      "payDayText": "매월 초",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "공공요금",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-003",
-      "no": 3,
-      "category": "공공요금",
-      "name": "전기요금",
-      "vendor": "한전",
-      "contact": "02-123",
-      "periodType": "기간 없음",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "-",
-      "contractAmount": "0",
-      "monthlyAmount": "청구금액",
-      "payDayText": "5일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "공공요금",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-004",
-      "no": 4,
-      "category": "공공요금",
-      "name": "음식물류 폐기물처리",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "1L당 000원",
-      "monthlyAmount": "청구금액",
-      "payDayText": "매월 초",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "계산서",
-      "evidenceRaw": "계산서",
-      "originalNote": "공공요금",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-005",
-      "no": 5,
-      "category": "연간계약",
-      "name": "기름걸레 교체",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "매월 10일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-006",
-      "no": 6,
-      "category": "연간계약",
-      "name": "정기소독(본관 및 급식실)",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "",
-      "monthlyAmount": "실시금액",
-      "payDayText": "소독후\n매월10일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "계산서",
-      "evidenceRaw": "계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-007",
-      "no": 7,
-      "category": "연간계약",
-      "name": "교직원 화장실 비데",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2024-06-28",
-      "contractEndDate": "2029-06-27",
-      "originalPeriodText": "2024. 6. 28. ~ 2029. 6. 27.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "20일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-008",
-      "no": 8,
-      "category": "연간계약",
-      "name": "정수기 임차",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "20일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-009",
-      "no": 9,
-      "category": "연간계약",
-      "name": "전기안전관리 용역",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "매월 20일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-010",
-      "no": 10,
-      "category": "연간계약",
-      "name": "소방시설 안전관리 용역",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "매월 20일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-011",
-      "no": 11,
-      "category": "연간계약",
-      "name": "승강기유지보수 용역",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "매월 20일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "엘베 번호:",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-012",
-      "no": 12,
-      "category": "연간계약",
-      "name": "산업안전보건 컨설팅",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "매월 20일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "근골격계조사 0000년 실시(매3년실시)",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-013",
-      "no": 13,
-      "category": "연간계약",
-      "name": "무인기계경비 용역",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2025-03-01",
-      "contractEndDate": "2028-02-29",
-      "originalPeriodText": "2025. 3. 1. ~ 2028. 2. 29.",
-      "contractAmount": "0",
-      "monthlyAmount": "0",
-      "payDayText": "25일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-014",
-      "no": 14,
-      "category": "공공요금",
-      "name": "도시가스",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간 없음",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "-",
-      "contractAmount": "0",
-      "monthlyAmount": "청구금액",
-      "payDayText": "25일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "공공요금",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-015",
-      "no": 15,
-      "category": "공공요금",
-      "name": "팩스요금",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간 없음",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "-",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "25일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "공공요금",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-016",
-      "no": 16,
-      "category": "공공요금",
-      "name": "전화요금",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간 없음",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "-",
-      "contractAmount": "",
-      "monthlyAmount": "청구금액",
-      "payDayText": "25일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "공공요금",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-017",
-      "no": 17,
-      "category": "공공요금",
-      "name": "위성방송 수신료",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간 없음",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "-",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "25일 자동이체",
-      "payCycle": "매월",
-      "isAutoPay": true,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "공공요금",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-018",
-      "no": 18,
-      "category": "연간계약",
-      "name": "공기청정기",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "교육청통합계약, \n4월부터 지급, 계좌이체\n검사검수부터~",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-019",
-      "no": 19,
-      "category": "연간계약",
-      "name": "정보화기기,학내망 유지보수",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-020",
-      "no": 20,
-      "category": "연간계약",
-      "name": "복합기(oo실, oo부)",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2030-02-28",
-      "originalPeriodText": "2026. 3. 1.~ 2030. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-021",
-      "no": 21,
-      "category": "연간계약",
-      "name": "컬러프린터",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-022",
-      "no": 22,
-      "category": "연간계약",
-      "name": "1교1변호사제 변호사 자문료",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-023",
-      "no": 23,
-      "category": "연간계약",
-      "name": "제3섹터 시설 관리",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-024",
-      "no": 24,
-      "category": "연간계약",
-      "name": "당직경비",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-025",
-      "no": 25,
-      "category": "연간계약",
-      "name": "청소미화",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "0",
-      "monthlyAmount": "",
-      "payDayText": "매월 25일경",
-      "payCycle": "매월",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-026",
-      "no": 26,
-      "category": "연간계약",
-      "name": "배식도우미",
-      "vendor": "•••",
-      "contact": "-",
       "periodType": "기간계약",
       "contractStartDate": "2026-03-01",
       "contractEndDate": "2027-02-28",
@@ -1309,113 +689,186 @@ const DEFAULT_DATA = {
       "managementMemo": "",
       "reminderDay": "",
       "reminderNote": "",
+      "monthlyPaymentCheck": true,
+      "monthlyVisitCheck": true,
+      "monthlyCheckLog": {},
       "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
+      "createdAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-10T00:00:00.000Z"
     },
     {
-      "id": "template-027",
-      "no": 27,
+      "id": "template-002",
+      "no": 2,
+      "category": "연간계약",
+      "name": "복합기 임대",
+      "vendor": "",
+      "contact": "",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "매월 말",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "reminderDay": "",
+      "reminderNote": "",
+      "monthlyPaymentCheck": true,
+      "monthlyVisitCheck": false,
+      "monthlyCheckLog": {},
+      "expireStatus": "",
+      "createdAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-10T00:00:00.000Z"
+    },
+    {
+      "id": "template-003",
+      "no": 3,
+      "category": "연간계약",
+      "name": "전기안전관리",
+      "vendor": "",
+      "contact": "",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "매월 말",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "reminderDay": "",
+      "reminderNote": "",
+      "monthlyPaymentCheck": true,
+      "monthlyVisitCheck": true,
+      "monthlyCheckLog": {},
+      "expireStatus": "",
+      "createdAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-10T00:00:00.000Z"
+    },
+    {
+      "id": "template-004",
+      "no": 4,
+      "category": "연간계약",
+      "name": "소방시설 점검",
+      "vendor": "",
+      "contact": "",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "점검 후",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "reminderDay": "",
+      "reminderNote": "",
+      "monthlyPaymentCheck": true,
+      "monthlyVisitCheck": true,
+      "monthlyCheckLog": {},
+      "expireStatus": "",
+      "createdAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-10T00:00:00.000Z"
+    },
+    {
+      "id": "template-005",
+      "no": 5,
+      "category": "연간계약",
+      "name": "승강기 유지관리",
+      "vendor": "",
+      "contact": "",
+      "periodType": "기간계약",
+      "contractStartDate": "2026-03-01",
+      "contractEndDate": "2027-02-28",
+      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
+      "contractAmount": "",
+      "monthlyAmount": "청구금액",
+      "payDayText": "매월 말",
+      "payCycle": "매월",
+      "isAutoPay": false,
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
+      "managementMemo": "",
+      "reminderDay": "",
+      "reminderNote": "",
+      "monthlyPaymentCheck": true,
+      "monthlyVisitCheck": true,
+      "monthlyCheckLog": {},
+      "expireStatus": "",
+      "createdAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-10T00:00:00.000Z"
+    },
+    {
+      "id": "template-006",
+      "no": 6,
       "category": "공공요금",
-      "name": "상하수도요금",
-      "vendor": "••수도사업소",
-      "contact": "-",
+      "name": "인터넷 회선",
+      "vendor": "",
+      "contact": "",
       "periodType": "기간 없음",
       "contractStartDate": "",
       "contractEndDate": "",
-      "originalPeriodText": "-",
+      "originalPeriodText": "기간 없음",
       "contractAmount": "",
       "monthlyAmount": "청구금액",
-      "payDayText": "짝수월 말일 \n자동이체",
-      "payCycle": "격월",
+      "payDayText": "매월 자동이체",
+      "payCycle": "매월",
       "isAutoPay": true,
-      "evidenceType": "지로",
-      "evidenceRaw": "지로(세금X)",
-      "originalNote": "2달치 격월청구 /공공요금",
+      "evidenceType": "세금계산서",
+      "evidenceRaw": "세금계산서",
+      "originalNote": "",
       "managementMemo": "",
       "reminderDay": "",
       "reminderNote": "",
+      "monthlyPaymentCheck": true,
+      "monthlyVisitCheck": false,
+      "monthlyCheckLog": {},
       "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
+      "createdAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-10T00:00:00.000Z"
     },
     {
-      "id": "template-028",
-      "no": 28,
+      "id": "template-007",
+      "no": 7,
       "category": "연간계약",
-      "name": "물품관리(RFID) 시스템",
-      "vendor": "•••",
-      "contact": "-",
+      "name": "방역 용역",
+      "vendor": "",
+      "contact": "",
       "periodType": "기간계약",
       "contractStartDate": "2026-03-01",
       "contractEndDate": "2027-02-28",
       "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
       "contractAmount": "",
       "monthlyAmount": "청구금액",
-      "payDayText": "상반기/하반기",
-      "payCycle": "반기",
+      "payDayText": "실시 후",
+      "payCycle": "매월",
       "isAutoPay": false,
       "evidenceType": "세금계산서",
       "evidenceRaw": "세금계산서",
-      "originalNote": "물품관리 00,000원(2회)\n재물관리 00,000원(1회)",
+      "originalNote": "",
       "managementMemo": "",
       "reminderDay": "",
       "reminderNote": "",
+      "monthlyPaymentCheck": true,
+      "monthlyVisitCheck": true,
+      "monthlyCheckLog": {},
       "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-029",
-      "no": 29,
-      "category": "연간계약",
-      "name": "실내공기질 측정용역",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간 없음",
-      "contractStartDate": "",
-      "contractEndDate": "",
-      "originalPeriodText": "",
-      "contractAmount": "",
-      "monthlyAmount": "측정 후\n 청구금액",
-      "payDayText": "상반기/하반기",
-      "payCycle": "반기",
-      "isAutoPay": false,
-      "evidenceType": "세금계산서",
-      "evidenceRaw": "세금계산서",
-      "originalNote": "교육청 통합계약/ \n4월쯤 공문 올 예정",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
-    },
-    {
-      "id": "template-030",
-      "no": 30,
-      "category": "연간계약",
-      "name": "폐식용유 수거",
-      "vendor": "•••",
-      "contact": "-",
-      "periodType": "기간계약",
-      "contractStartDate": "2026-03-01",
-      "contractEndDate": "2027-02-28",
-      "originalPeriodText": "2026. 3. 1. ~ 2027. 2. 28.",
-      "contractAmount": "",
-      "monthlyAmount": "세입",
-      "payDayText": "",
-      "payCycle": "기타",
-      "isAutoPay": false,
-      "evidenceType": "",
-      "evidenceRaw": "",
-      "originalNote": "00,000원/1캔(18L)",
-      "managementMemo": "",
-      "reminderDay": "",
-      "reminderNote": "",
-      "expireStatus": "",
-      "createdAt": "2026-06-06T00:00:00.000Z",
-      "updatedAt": "2026-06-06T00:00:00.000Z"
+      "createdAt": "2026-08-10T00:00:00.000Z",
+      "updatedAt": "2026-08-10T00:00:00.000Z"
     }
   ],
   "lastUpdated": null
@@ -1447,27 +900,44 @@ document.addEventListener('DOMContentLoaded', function() {
 function loadStorage() {
   try {
     var raw = localStorage.getItem(SK);
+    var migratedFrom = '';
+    if (!raw) {
+      for (var i = 0; i < LEGACY_STORAGE_KEYS.length; i++) {
+        var legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEYS[i]);
+        if (legacyRaw) {
+          raw = legacyRaw;
+          migratedFrom = LEGACY_STORAGE_KEYS[i];
+          break;
+        }
+      }
+    }
     if (raw) {
       var p = JSON.parse(raw);
       D = Object.assign({}, cloneDefaultData(), p);
       if (!Array.isArray(D.contracts)) D.contracts = [];
+      if (migratedFrom) {
+        localStorage.setItem(SK, JSON.stringify(D));
+        console.info('연간계약보드 저장키 마이그레이션 완료:', migratedFrom, '→', SK);
+      }
     } else {
       D = cloneDefaultData();
     }
   } catch(e) { console.error(e); D = cloneDefaultData(); }
-  document.getElementById('schoolName').value = D.schoolName || '';
+  delete D.schoolName;
+  normalizeContracts();
+  if (migratedFrom) localStorage.setItem(SK, JSON.stringify(D));
   document.getElementById('schoolYear').value = D.schoolYear || '2026학년도';
   updLastUpd();
 }
 
 function saveStorage() {
+  delete D.schoolName;
   D.lastUpdated = new Date().toISOString();
   try { localStorage.setItem(SK, JSON.stringify(D)); } catch(e) { toast('저장 오류: ' + e.message, 'err'); }
   updLastUpd();
 }
 
-function saveSchoolInfo() {
-  D.schoolName = document.getElementById('schoolName').value;
+function saveBoardInfo() {
   D.schoolYear = document.getElementById('schoolYear').value;
   saveStorage();
 }
@@ -1477,6 +947,9 @@ function normalizeContracts() {
   D.contracts.forEach(function(c) {
     if (c.reminderDay === undefined) c.reminderDay = '';
     if (c.reminderNote === undefined) c.reminderNote = '';
+    if (c.monthlyPaymentCheck === undefined) c.monthlyPaymentCheck = (c.payCycle === '매월' || !!c.isAutoPay);
+    if (c.monthlyVisitCheck === undefined) c.monthlyVisitCheck = false;
+    if (!c.monthlyCheckLog || typeof c.monthlyCheckLog !== 'object' || Array.isArray(c.monthlyCheckLog)) c.monthlyCheckLog = {};
   });
 }
 
@@ -1972,6 +1445,9 @@ function parseExcelRows(rows) {
       managementMemo: '',
       reminderDay: reminderDay,
       reminderNote: reminderNote,
+      monthlyPaymentCheck: (cycle === '매월' || isAP),
+      monthlyVisitCheck: false,
+      monthlyCheckLog: {},
       expireStatus: expSt,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -2015,7 +1491,7 @@ function exportExcel() {
 
   var hd = ['No','구분','계약명','계약업체','연락처','기간유형','계약시작일','계약종료일',
             '계약금액','월 지급액','지급일','지급주기','자동이체 여부','증빙구분',
-            '비고','관리메모','알림일','알림내용','만료상태'];
+            '비고','관리메모','알림일','알림내용','월간 지출확인','월간 방문·점검확인','이번 달 지출완료','이번 달 방문완료','만료상태'];
 
   var rows = D.contracts.map(function(c, i) {
     return [
@@ -2025,7 +1501,7 @@ function exportExcel() {
       c.payDayText||'', c.payCycle||'',
       c.isAutoPay ? '자동이체' : '',
       c.evidenceType||'', c.originalNote||'', c.managementMemo||'',
-      c.reminderDay||'', c.reminderNote||'', c.expireStatus||''
+      c.reminderDay||'', c.reminderNote||'', c.monthlyPaymentCheck?'사용':'', c.monthlyVisitCheck?'사용':'', isMonthlyDone(c,'payment')?'완료':'', isMonthlyDone(c,'visit')?'완료':'', c.expireStatus||''
     ];
   });
 
@@ -2033,12 +1509,12 @@ function exportExcel() {
   ws['!cols'] = [
     {wch:5},{wch:10},{wch:28},{wch:16},{wch:15},
     {wch:30},{wch:13},{wch:13},{wch:16},{wch:16},
-    {wch:16},{wch:8},{wch:10},{wch:13},{wch:30},{wch:30},{wch:12},{wch:18},{wch:13}
+    {wch:16},{wch:8},{wch:10},{wch:13},{wch:30},{wch:30},{wch:12},{wch:18},{wch:14},{wch:16},{wch:16},{wch:16},{wch:13}
   ];
 
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '연간계약현황');
-  var fn = (D.schoolName||'연간계약보드') + '_' + (D.schoolYear||'') + '_' + fmtDateFile(new Date()) + '.xlsx';
+  var fn = '연간계약보드_' + (D.schoolYear||'') + '_' + fmtDateFile(new Date()) + '.xlsx';
   XLSX.writeFile(wb, fn);
   toast('엑셀 파일을 저장했습니다. 계약기간 컬럼은 빼고 시작일/종료일만 내보냅니다.', 'ok');
 }
@@ -2052,7 +1528,7 @@ function doBackup() {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
-  a.download = (D.schoolName||'연간계약보드') + '_백업_' + fmtDateFile(new Date()) + '.bak';
+  a.download = '연간계약보드_' + (D.schoolYear||'') + '_백업_' + fmtDateFile(new Date()) + '.bak';
   a.click();
   URL.revokeObjectURL(url);
   toast('백업 파일을 저장했습니다.', 'ok');
@@ -2077,7 +1553,7 @@ function handleRestore(ev) {
           if (!p.contracts || !Array.isArray(p.contracts)) { toast('유효하지 않은 백업 파일입니다.', 'err'); return; }
           D = Object.assign({}, D, p);
           saveStorage();
-          document.getElementById('schoolName').value = D.schoolName || '';
+          delete D.schoolName;
           document.getElementById('schoolYear').value = D.schoolYear || '2026학년도';
           renderAll();
           toast(p.contracts.length + '건을 불러왔습니다.', 'ok');
@@ -2095,7 +1571,7 @@ function handleRestore(ev) {
 function doReset() {
   showConf({
     ico:'⚠️', title:'전체 초기화',
-    msg: '현재 브라우저에 저장된 계약현황과 메모가 삭제됩니다.\n계속할까요?',
+    msg: '이 브라우저에 저장된 연간계약 데이터와 메모를 모두 삭제합니다.\n계속할까요?',
     okTxt: '초기화',
     onOk: function() { D.contracts = []; saveStorage(); renderAll(); toast('데이터가 초기화되었습니다.', 'ok'); }
   });
@@ -2166,7 +1642,7 @@ function filterLabel(f) {
   var map = {
     all:'전체', 공공요금:'공공요금', 연간계약:'연간계약', 자동이체:'자동이체', '90일':'만료관리',
     '60일':'60일 이내', '30일':'30일 이내', 종료됨:'종료됨', 기간없음:'기간 없음', 발생시:'발생 시',
-    근무기간:'근무기간', 오늘알림:'오늘 알림', 알림5일:'5일 이내 알림', 세금계산서:'세금계산서', 계산서:'계산서', 지로:'지로', 고지서:'고지서', 무증빙:'무증빙', 메모:'메모 있음'
+    근무기간:'근무기간', 오늘알림:'오늘 알림', 알림5일:'5일 이내 알림', 세금계산서:'세금계산서', 계산서:'계산서', 지로:'지로', 고지서:'고지서', 무증빙:'무증빙', 메모:'메모 있음', 월지출:'이번 달 지출', 월방문:'이번 달 방문·점검', 월지출미완료:'지출 확인 필요', 월방문미완료:'방문 확인 필요'
   };
   return map[f] || f || '전체';
 }
@@ -2177,7 +1653,23 @@ function filterGroup(f) {
   if (['세금계산서','계산서','지로','고지서','무증빙'].indexOf(f) !== -1) return 'evidence';
   if (['오늘알림','알림5일'].indexOf(f) !== -1) return 'reminder';
   if (['자동이체','메모'].indexOf(f) !== -1) return 'flag';
+  if (f === '월지출') return 'monthlyPaymentTarget';
+  if (f === '월지출미완료') return 'monthlyPaymentPending';
+  if (f === '월방문') return 'monthlyVisitTarget';
+  if (f === '월방문미완료') return 'monthlyVisitPending';
   return 'etc';
+}
+
+function isRelevantThisMonth(c) {
+  if (c.periodType !== '기간계약') return true;
+  var d = new Date();
+  var first = new Date(d.getFullYear(), d.getMonth(), 1);
+  var last = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59, 999);
+  var start = c.contractStartDate ? new Date(c.contractStartDate + 'T00:00:00') : null;
+  var end = c.contractEndDate ? new Date(c.contractEndDate + 'T23:59:59') : null;
+  if (start && start > last) return false;
+  if (end && end < first) return false;
+  return true;
 }
 
 function matchesOneFilter(c, f) {
@@ -2198,6 +1690,10 @@ function matchesOneFilter(c, f) {
     case '고지서': return c.evidenceType === '고지서';
     case '무증빙': return c.evidenceType === '무증빙';
     case '메모': return !!boardMemoText(c);
+    case '월지출': return isRelevantThisMonth(c) && !!c.monthlyPaymentCheck;
+    case '월방문': return isRelevantThisMonth(c) && !!c.monthlyVisitCheck;
+    case '월지출미완료': return isRelevantThisMonth(c) && !!c.monthlyPaymentCheck && !isMonthlyDone(c, 'payment');
+    case '월방문미완료': return isRelevantThisMonth(c) && !!c.monthlyVisitCheck && !isMonthlyDone(c, 'visit');
     case '오늘알림': { var ti = reminderInfo(c); return !!(ti && ti.isToday); }
     case '알림5일': { var si = reminderInfo(c); return !!(si && si.isSoon); }
     default: return true;
@@ -2421,7 +1917,7 @@ function sortBy(field) {
   gSortMode = 'custom';
   var sel = document.getElementById('sortSel');
   if (sel) sel.value = 'default';
-  var fieldIdx = {'expireStatus':0,'category':1,'name':2,'vendor':3,'contractEndDate':5,'contractAmount':6,'monthlyAmount':7,'payDayText':8,'evidenceType':9,'memo':10};
+  var fieldIdx = {'category':0,'name':1,'vendor':2,'contractEndDate':4,'contractAmount':5,'monthlyAmount':6,'payDayText':7,'evidenceType':8,'memo':10,'expireStatus':11};
   if (fieldIdx[field] !== undefined && ths[fieldIdx[field]]) {
     ths[fieldIdx[field]].classList.add(gSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
   }
@@ -2439,21 +1935,65 @@ function renderAll() {
   renderList();
 }
 
+function currentMonthKey() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function currentMonthLabel() {
+  var d = new Date();
+  return (d.getMonth()+1) + '월';
+}
+
+function monthlyLog(c) {
+  var key = currentMonthKey();
+  if (!c.monthlyCheckLog || typeof c.monthlyCheckLog !== 'object') c.monthlyCheckLog = {};
+  if (!c.monthlyCheckLog[key] || typeof c.monthlyCheckLog[key] !== 'object') c.monthlyCheckLog[key] = {};
+  return c.monthlyCheckLog[key];
+}
+
+function isMonthlyDone(c, type) {
+  var log = c.monthlyCheckLog && c.monthlyCheckLog[currentMonthKey()];
+  return !!(log && log[type]);
+}
+
+function toggleMonthlyCheck(ev, id, type) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  var c = D.contracts.find(function(x){ return x.id === id; });
+  if (!c) return;
+  if (type === 'payment' && !c.monthlyPaymentCheck) return;
+  if (type === 'visit' && !c.monthlyVisitCheck) return;
+  var log = monthlyLog(c);
+  log[type] = !log[type];
+  saveStorage();
+  renderAll();
+}
+
+function progressPct(done, total) {
+  return total ? Math.round(done / total * 100) : 0;
+}
+
 function renderDash() {
   var all = D.contracts;
-  var pub = all.filter(function(c){ return c.category === '공공요금'; }).length;
-  var ann = all.filter(function(c){ return c.category === '연간계약'; }).length;
-  var ap  = all.filter(function(c){ return c.isAutoPay; }).length;
+  var paymentTargets = all.filter(function(c){ return isRelevantThisMonth(c) && c.monthlyPaymentCheck; });
+  var visitTargets = all.filter(function(c){ return isRelevantThisMonth(c) && c.monthlyVisitCheck; });
+  var payDone = paymentTargets.filter(function(c){ return isMonthlyDone(c,'payment'); }).length;
+  var visitDone = visitTargets.filter(function(c){ return isMonthlyDone(c,'visit'); }).length;
   var e90 = all.filter(function(c){ return ['90일 이내 종료','60일 이내 종료','30일 이내 종료'].indexOf(c.expireStatus) !== -1; }).length;
-  var exp = all.filter(function(c){ return c.expireStatus === '종료됨'; }).length;
-  var mem = all.filter(function(c){ return !!boardMemoText(c); }).length;
+  var monthTitle = document.getElementById('dashMonthTitle');
+  if (monthTitle) monthTitle.textContent = currentMonthLabel() + ' 계약 운영 현황';
   document.getElementById('sTotal').textContent = all.length;
-  document.getElementById('sPub').textContent = pub;
-  document.getElementById('sAnn').textContent = ann;
-  document.getElementById('sAuto').textContent = ap;
+  document.getElementById('sPayDone').textContent = payDone;
+  document.getElementById('sPayTotal').textContent = paymentTargets.length;
+  document.getElementById('sVisitDone').textContent = visitDone;
+  document.getElementById('sVisitTotal').textContent = visitTargets.length;
   document.getElementById('s90').textContent = e90;
-  document.getElementById('sExp').textContent = exp;
-  document.getElementById('sMemo').textContent = mem;
+  document.getElementById('sPayDesc').textContent = paymentTargets.length ? ((paymentTargets.length-payDone) + '건 확인 필요') : '확인 대상 없음';
+  document.getElementById('sVisitDesc').textContent = visitTargets.length ? ((visitTargets.length-visitDone) + '건 확인 필요') : '확인 대상 없음';
+  document.getElementById('sPayBar').style.width = progressPct(payDone,paymentTargets.length) + '%';
+  document.getElementById('sVisitBar').style.width = progressPct(visitDone,visitTargets.length) + '%';
+  document.getElementById('statPayment').classList.toggle('is-complete', paymentTargets.length > 0 && payDone === paymentTargets.length);
+  document.getElementById('statVisit').classList.toggle('is-complete', visitTargets.length > 0 && visitDone === visitTargets.length);
 }
 
 function renderList() {
@@ -2520,21 +2060,30 @@ function memoCellHtml(c) {
   return '<div class="memo-cell" title="' + ea(memo) + '">' + eh(memo) + '</div>';
 }
 
+function monthlyCheckButtonHtml(c, type, label) {
+  var enabled = type === 'payment' ? c.monthlyPaymentCheck : c.monthlyVisitCheck;
+  if (!enabled) return '';
+  var done = isMonthlyDone(c, type);
+  return '<button type="button" class="month-btn ' + (done ? 'done' : 'pending') + '" onclick="toggleMonthlyCheck(event,\'' + c.id + '\',\'' + type + '\')">' + label + ' ' + (done ? '✓' : '○') + '</button>';
+}
+
+function monthlyCellHtml(c) {
+  var p = monthlyCheckButtonHtml(c, 'payment', '지출');
+  var v = monthlyCheckButtonHtml(c, 'visit', '방문');
+  if (!p && !v) return '<span class="month-none">-</span>';
+  return '<div class="month-checks">' + p + v + '</div>';
+}
+
 function renderTable(list) {
   var tb = document.getElementById('tbody');
   var html = '';
   list.forEach(function(c) {
     var st = c.expireStatus || '-';
-    var bc = expClass(st);
     var tc = trClass(st);
-
     var periodHtml = periodCellHtml(c);
-
     html += '<tr data-id="' + ea(c.id) + '" class="' + tc + '" onclick="openDetail(\'' + c.id + '\')">';
-    html += '<td>' + expBadgeHtml(st) + '</td>';
-    html += '<td>' + (c.category === '공공요금' ? '<span class="bdg bdg-pub">공공요금</span>' : '<span class="cat-empty">-</span>') + '</td>';
-    html += '<td><div class="name-cell" title="' + ea(c.name) + '">' + eh(c.name) + '</div>';
-    html += '</td>';
+    html += '<td>' + (c.category === '공공요금' ? '<span class="bdg bdg-pub">공공요금</span>' : '<span class="bdg bdg-ann">연간계약</span>') + '</td>';
+    html += '<td><div class="name-cell" title="' + ea(c.name) + '">' + eh(c.name) + '</div></td>';
     html += '<td><div class="trunc" title="' + ea(c.vendor) + '">' + (c.vendor ? eh(c.vendor) : '<span style="color:var(--t3)">-</span>') + '</div></td>';
     html += '<td>' + contactCellHtml(c.contact) + '</td>';
     html += '<td>' + periodHtml + '</td>';
@@ -2543,7 +2092,9 @@ function renderTable(list) {
     html += '<td style="text-align:right;font-size:12px;white-space:nowrap">' + (monthlyText ? (shouldHighlightMonthly(c.monthlyAmount) ? '<span class="monthly-chip">' + eh(monthlyText) + '</span>' : eh(monthlyText)) : '<span style="color:var(--t3)">-</span>') + '</td>';
     html += '<td><span class="pay-day-cell" title="' + ea(c.payDayText) + '">' + (c.payDayText ? eh(c.payDayText) : '<span style="color:var(--t3)">-</span>') + '</span></td>';
     html += '<td><span class="evidence-cell" title="' + ea(c.evidenceType) + '">' + (c.evidenceType ? eh(c.evidenceType) : '<span style="color:var(--t3)">-</span>') + '</span></td>';
+    html += '<td>' + monthlyCellHtml(c) + '</td>';
     html += '<td>' + memoCellHtml(c) + '</td>';
+    html += '<td>' + expBadgeHtml(st) + '</td>';
     html += '</tr>';
   });
   tb.innerHTML = html;
@@ -2558,10 +2109,8 @@ function renderCards(list) {
     var ptxt = boardPeriodText(c).replace(/\n/g, ' / ');
 
     html += '<div class="m-card" onclick="openDetail(\'' + c.id + '\')">';
-    html += '<div class="mc-top"><div class="mc-name">' + eh(c.name) + '</div>';
-    html += '<div class="mc-bdgs">' + expBadgeHtml(st);
-    if (c.category === '공공요금') html += '<span class="bdg bdg-pub">공공요금</span>';
-    html += '</div></div>';
+    html += '<div class="mc-top"><div><div class="mc-bdgs">' + (c.category === '공공요금' ? '<span class="bdg bdg-pub">공공요금</span>' : '<span class="bdg bdg-ann">연간계약</span>') + '</div><div class="mc-name" style="margin-top:5px">' + eh(c.name) + '</div></div>';
+    html += '<div class="mc-bdgs">' + expBadgeHtml(st) + '</div></div>';
     if (c.vendor) html += '<div class="mc-vendor">' + eh(c.vendor) + '</div>';
     var cardMemo = boardMemoText(c);
     if (cardMemo) html += '<div class="mc-memo"><span class="mc-ml">메모 </span>' + eh(cardMemo) + '</div>';
@@ -2572,7 +2121,9 @@ function renderCards(list) {
     if (mobileMonthlyText) html += '<div><span class="mc-ml">월지급 </span><span class="mc-mv ' + (shouldHighlightMonthly(c.monthlyAmount) ? 'monthly-chip' : '') + '">' + eh(mobileMonthlyText) + '</span></div>';
     if (c.payDayText) html += '<div><span class="mc-ml">지급일 </span><span class="mc-mv">' + eh(c.payDayText) + '</span></div>';
     if (c.evidenceType) html += '<div><span class="mc-ml">증빙 </span><span class="mc-mv">' + eh(c.evidenceType) + '</span></div>';
-    html += '</div></div>';
+    html += '</div>';
+    if (c.monthlyPaymentCheck || c.monthlyVisitCheck) html += '<div class="mc-checks">' + monthlyCheckButtonHtml(c,'payment','지출') + monthlyCheckButtonHtml(c,'visit','방문') + '</div>';
+    html += '</div>';
   });
   mc.innerHTML = html;
 }
@@ -2627,6 +2178,7 @@ function openAdd() {
   document.getElementById('cancelBtn').style.display = '';
   renderForm({ id:'', no: D.contracts.length+1, category:'연간계약', name:'', vendor:'', contact:'',
     periodType:'기간계약', contractStartDate:'', contractEndDate:'', originalPeriodText:'',
+    monthlyPaymentCheck:true, monthlyVisitCheck:false, monthlyCheckLog:{},
     contractAmount:'', monthlyAmount:'', payDayText:'', payCycle:'매월', isAutoPay:false,
     evidenceType:'', originalNote:'', managementMemo:'', reminderDay:'', reminderNote:'' });
   document.getElementById('detailOv').classList.add('on');
@@ -2665,7 +2217,7 @@ function renderView(c) {
   html += '<div class="dv-stitle">기본 정보</div>';
   html += dvRow('계약명', '<strong>' + eh(c.name) + '</strong>');
   html += dvRow('계약업체', c.vendor || '-');
-  html += dvRow('연락처', c.contact || '-');
+  html += dvRow('업체 대표 연락처', c.contact || '-');
 
   html += '<div class="dv-stitle" style="margin-top:14px">계약기간</div>';
   html += dvRow('기간 유형', c.periodType || '-');
@@ -2680,6 +2232,11 @@ function renderView(c) {
   html += dvRow('지급주기', c.payCycle || '-');
   html += dvRow('자동이체', c.isAutoPay ? '<span class="bdg bdg-auto">자동이체</span>' : '해당 없음');
   html += dvRow('증빙구분', c.evidenceType || '-');
+
+  html += '<div class="dv-stitle" style="margin-top:14px">' + currentMonthLabel() + ' 확인 현황</div>';
+  if (c.monthlyPaymentCheck) html += dvRow('지출 확인', isMonthlyDone(c,'payment') ? '<span class="bdg bdg-ok">완료</span>' : '<span class="bdg bdg-60">확인 필요</span>');
+  if (c.monthlyVisitCheck) html += dvRow('방문·점검', isMonthlyDone(c,'visit') ? '<span class="bdg bdg-ok">완료</span>' : '<span class="bdg bdg-60">확인 필요</span>');
+  if (!c.monthlyPaymentCheck && !c.monthlyVisitCheck) html += '<div class="no-data">월간 확인 항목을 사용하지 않는 계약입니다.</div>';
 
   html += '<div class="dv-stitle" style="margin-top:14px">알림</div>';
   html += dvRow('알림일', c.reminderDay || '-');
@@ -2711,67 +2268,63 @@ function dvRow(lbl, val) {
 function renderForm(c) {
   var isAP = c.isAutoPay ? 'true' : 'false';
   var dtShow = c.periodType === '기간계약' ? '' : 'display:none';
-
   var html = '';
+
   html += '<div class="f-sec">';
   html += '<div class="f-sec-ttl">기본 정보</div>';
-  html += '<div class="grid2">';
-  html += fgSel('구분 *', 'fCat', [['연간계약','연간계약'],['공공요금','공공요금']], c.category);
-  html += fgInp('No', 'fNo', 'number', String(c.no||''), '자동');
+  html += '<div class="grid1">' + fgSel('구분 *', 'fCat', [['연간계약','연간계약'],['공공요금','공공요금']], c.category) + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgInp('No', 'fNo', 'number', String(c.no||''), '자동') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgInp('계약명 *', 'fName', 'text', c.name, '계약명을 입력하세요') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgInp('계약업체', 'fVendor', 'text', c.vendor||'', '업체명') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgInpHint('업체 대표 연락처', 'fContact', 'text', c.contact||'', '예: 02-0000-0000', '업체 대표번호 등 업무용 연락처만 입력하세요. 개인 휴대전화는 입력하지 마세요.') + '</div>';
   html += '</div>';
-  html += '<div class="grid1" style="margin-top:10px">';
-  html += fgInp('계약명 *', 'fName', 'text', c.name, '계약명을 입력하세요');
-  html += '</div>';
-  html += '<div class="grid2" style="margin-top:10px">';
-  html += fgInp('계약업체', 'fVendor', 'text', c.vendor||'', '업체명');
-  html += fgInp('연락처', 'fContact', 'text', c.contact||'', '전화번호');
-  html += '</div></div>';
 
   html += '<div class="f-sec">';
   html += '<div class="f-sec-ttl">계약기간</div>';
-  html += '<div class="grid1">';
-  html += fgSel('기간 유형', 'fPType', [['기간계약','기간계약'],['발생 시','발생 시'],['근무기간','근무기간'],['기간 없음','기간 없음']], c.periodType, 'onPTypeChg()');
-  html += '</div>';
-  html += '<div id="dtFields" style="' + dtShow + '">';
-  html += '<div class="grid2" style="margin-top:10px">';
+  html += '<div class="grid1">' + fgSel('기간 유형', 'fPType', [['기간계약','기간계약'],['발생 시','발생 시'],['근무기간','근무기간'],['기간 없음','기간 없음']], c.periodType, 'onPTypeChg()') + '</div>';
+  html += '<div id="dtFields" style="' + dtShow + '"><div class="grid2 date-pair" style="margin-top:10px">';
   html += fgDate('계약시작일', 'fSDate', c.contractStartDate||'');
   html += fgDate('계약종료일', 'fEDate', c.contractEndDate||'');
   html += '</div></div>';
-  html += '<div class="period-preview">계약기간 자동 표시: <strong id="periodPreview">' + eh(fmtPeriod(c)) + '</strong><br><span class="fhint">계약기간은 시작일과 종료일로 자동 생성됩니다.</span></div>';
+  html += '<div class="period-preview">계약기간 자동 표시: <strong id="periodPreview">' + eh(fmtPeriod(c)) + '</strong><br><span class="fhint">시작일과 종료일은 서로 연결된 정보라 이 두 항목만 가로로 배치합니다.</span></div>';
   html += '</div>';
 
   html += '<div class="f-sec">';
   html += '<div class="f-sec-ttl">금액 및 지급</div>';
-  html += '<div class="grid2">';
-  html += fgInp('계약금액', 'fAmount', 'text', fmtMoneyText(c.contractAmount||''), '예: 1,200,000원', 'formatMoneyInput(this)');
-  html += fgInp('월 지급액', 'fMonthly', 'text', fmtMoneyText(c.monthlyAmount||''), '예: 청구금액, 100,000원', 'formatMoneyInput(this)');
+  html += '<div class="grid1">' + fgInp('계약금액', 'fAmount', 'text', fmtMoneyText(c.contractAmount||''), '예: 1,200,000원', 'formatMoneyInput(this)') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgInp('월 지급액', 'fMonthly', 'text', fmtMoneyText(c.monthlyAmount||''), '예: 청구금액, 100,000원', 'formatMoneyInput(this)') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgInp('지급일', 'fPayday', 'text', c.payDayText||'', '예: 5일 자동이체, 청구 시') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgSel('지급주기', 'fCycle', [['매월','매월'],['격월','격월'],['반기','반기'],['연간','연간'],['발생 시','발생 시'],['기타','기타']], c.payCycle||'매월') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgSel('자동이체', 'fIsAP', [['false','해당 없음'],['true','자동이체']], isAP) + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgSel('증빙구분', 'fEvid', [['','선택'],['세금계산서','세금계산서'],['계산서','계산서'],['지로','지로'],['고지서','고지서'],['무증빙','무증빙'],['기타','기타']], c.evidenceType||'') + '</div>';
   html += '</div>';
-  html += '<div class="grid2" style="margin-top:10px">';
-  html += fgInp('지급일', 'fPayday', 'text', c.payDayText||'', '예: 5일 자동이체, 청구 시');
-  html += fgSel('지급주기', 'fCycle', [['매월','매월'],['격월','격월'],['반기','반기'],['연간','연간'],['발생 시','발생 시'],['기타','기타']], c.payCycle||'매월');
+
+  html += '<div class="f-sec">';
+  html += '<div class="f-sec-ttl">월간 확인 항목</div>';
+  html += '<div class="check-stack">';
+  html += fgCheck('fTrackPayment', '지출 확인', '이번 달 지출 완료 여부를 대시보드에서 관리합니다.', !!c.monthlyPaymentCheck);
+  html += fgCheck('fTrackVisit', '방문·점검 확인', '정수기·소방·승강기 등 방문이나 점검 완료 여부를 월별로 관리합니다.', !!c.monthlyVisitCheck);
+  html += '</div><span class="fhint" style="display:block;margin-top:7px">완료 기록은 월별로 따로 저장되어 다음 달이 되면 새 달 기준으로 자동 전환됩니다.</span>';
   html += '</div>';
-  html += '<div class="grid2" style="margin-top:10px">';
-  html += fgSel('자동이체', 'fIsAP', [['false','해당 없음'],['true','자동이체']], isAP);
-  html += fgSel('증빙구분', 'fEvid', [['','선택'],['세금계산서','세금계산서'],['계산서','계산서'],['지로','지로'],['고지서','고지서'],['무증빙','무증빙'],['기타','기타']], c.evidenceType||'');
-  html += '</div></div>';
 
   html += '<div class="f-sec">';
   html += '<div class="f-sec-ttl">알림</div>';
-  html += '<div class="grid2">';
-  html += fgInpHint('알림일', 'fRemDay', 'text', c.reminderDay||'', '예: 매월 5일, 매월 말일', '앱을 열었을 때 오늘/5일 이내 알림으로 보여줍니다.');
-  html += fgInpHint('알림내용', 'fRemNote', 'text', c.reminderNote||'', '예: 지출 확인, 자동이체 확인', '캘린더 일정 제목에도 함께 들어갑니다.');
-  html += '</div>';
+  html += '<div class="grid1">' + fgInpHint('알림일', 'fRemDay', 'text', c.reminderDay||'', '예: 매월 5일, 매월 말일', '앱을 열었을 때 오늘/5일 이내 알림으로 보여줍니다.') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgInpHint('알림내용', 'fRemNote', 'text', c.reminderNote||'', '예: 지출 확인, 자동이체 확인', '캘린더 일정 제목에도 함께 들어갑니다.') + '</div>';
   if (c.id && c.reminderDay) html += '<div style="margin-top:8px"><button type="button" class="btn btn-sm" onclick="downloadIcsForContract(\'' + c.id + '\')">캘린더 일정 만들기</button></div>';
   html += '</div>';
 
   html += '<div class="f-sec">';
   html += '<div class="f-sec-ttl">비고 및 관리메모</div>';
-  html += fgTA('비고 (원본 내용)', 'fNote', c.originalNote||'', '엑셀에서 가져온 원본 비고');
-  html += '<div style="margin-top:10px">';
-  html += fgTAHint('관리메모', 'fMemo', c.managementMemo||'', '예: 계약 종료 전 재계약 검토, 담당자 통화 완료 등', '웹앱에서 추가로 작성하는 운영 메모');
-  html += '</div></div>';
+  html += '<div class="grid1">' + fgTA('비고 (원본 내용)', 'fNote', c.originalNote||'', '엑셀에서 가져온 원본 비고') + '</div>';
+  html += '<div class="grid1" style="margin-top:10px">' + fgTAHint('관리메모', 'fMemo', c.managementMemo||'', '예: 계약 종료 전 재계약 검토, 담당자 통화 완료 등', '웹앱에서 추가로 작성하는 운영 메모 · 개인정보·계좌정보 등 민감정보는 기록하지 마세요.') + '</div>';
+  html += '</div>';
 
   document.getElementById('modalBody').innerHTML = html;
+}
+
+function fgCheck(id, label, hint, checked) {
+  return '<label class="check-row" for="' + id + '"><input type="checkbox" id="' + id + '"' + (checked ? ' checked' : '') + '><span class="check-copy"><b>' + label + '</b><span>' + hint + '</span></span></label>';
 }
 
 function fgInp(lbl, id, tp, val, ph, onblur) {
@@ -2843,6 +2396,9 @@ function saveContract() {
     managementMemo: document.getElementById('fMemo').value.trim(),
     reminderDay: document.getElementById('fRemDay').value.trim(),
     reminderNote: document.getElementById('fRemNote').value.trim(),
+    monthlyPaymentCheck: document.getElementById('fTrackPayment').checked,
+    monthlyVisitCheck: document.getElementById('fTrackVisit').checked,
+    monthlyCheckLog: (gCurId ? ((D.contracts.find(function(c){ return c.id === gCurId; }) || {}).monthlyCheckLog || {}) : {}),
     expireStatus: exSt,
     updatedAt: new Date().toISOString()
   };
