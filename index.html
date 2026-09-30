@@ -10,7 +10,9 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<link rel="preload" href="fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face{font-family:"Pretendard Variable";font-style:normal;font-weight:45 920;font-display:swap;src:url("fonts/PretendardVariable.woff2") format("woff2")}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --blue:#2563eb;--blue-lt:#eff6ff;--blue-dk:#1d4ed8;
@@ -25,7 +27,7 @@
   --slate:#475569;--slate-lt:#f1f5f9;
   --r:10px;--rs:8px;--rx:7px;
 }
-body{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);line-height:1.55;font-size:14px;letter-spacing:-.01em;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.55;font-size:14px;letter-spacing:-.01em;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
@@ -445,6 +447,32 @@ textarea.fc{resize:vertical;min-height:72px}
   .date-pair{grid-template-columns:1fr!important}
   .modal{max-width:100%}
 }
+
+/* Example mode and in-app help */
+.btn-demo{background:var(--blue-lt);border-color:#dbeafe;color:var(--blue-dk)}
+.btn-demo:hover{background:#dbeafe;border-color:#bfdbfe}
+.demo-banner{display:flex;align-items:center;gap:16px;margin-bottom:18px;padding:14px 16px;border:1px solid #bfdbfe;border-radius:10px;background:var(--blue-lt);color:#1e40af}
+.demo-banner[hidden]{display:none}
+.demo-banner>div{flex:1;min-width:0}
+.demo-banner strong{font-size:14px;font-weight:650}
+.demo-banner p{font-size:13px;line-height:1.65;margin-top:3px}
+.help-dialog{margin:auto;width:min(700px,calc(100% - 28px));max-height:85vh;max-height:85dvh;padding:0;border:1px solid var(--border);border-radius:14px;color:var(--text);background:#fff;box-shadow:0 20px 70px rgba(15,23,42,.2)}
+.help-dialog[open]{display:flex;flex-direction:column}
+.help-dialog::backdrop{background:rgba(15,23,42,.38)}
+.help-dialog h2{font-size:17px;font-weight:650}
+.help-body{padding:20px;overflow-y:auto;font-size:14px;line-height:1.8;overscroll-behavior:contain}
+.help-intro{color:var(--t2);margin-bottom:20px}
+.help-body section+section{border-top:1px solid var(--border2);padding-top:18px;margin-top:18px}
+.help-body h3{font-size:15px;font-weight:650;margin-bottom:8px}
+.help-body p+p{margin-top:8px}
+.help-body ol{padding-left:22px}
+.help-body li+li{margin-top:8px}
+.help-body dt{font-weight:600;margin-top:8px}
+.help-body dd{color:var(--t2);margin:3px 0 10px}
+.help-links a{color:var(--blue-dk);text-underline-offset:3px}
+.help-dialog .modal-ftr{justify-content:flex-end}
+button:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+@media(max-width:600px){.demo-banner{align-items:flex-start;flex-direction:column;gap:10px}.help-body{padding:16px}.hdr-main-acts .btn{font-size:12px}}
 </style>
 </head>
 <body>
@@ -461,12 +489,13 @@ textarea.fc{resize:vertical;min-height:72px}
     <div class="hdr-brand">
       <div class="hdr-brand-line">
         <h1>📅 연간계약보드</h1>
-        <span class="version-badge" title="현재 배포 버전">v1.4</span>
+        <span class="version-badge" title="현재 배포 버전">v1.5</span>
       </div>
       <p>공개·비민감 계약정보를 정리하는 연간 업무 보드 · 서버 DB 저장 없음</p>
     </div>
     <div class="hdr-acts">
       <div class="hdr-main-acts">
+        <button type="button" class="btn btn-demo" id="demoBtn" onclick="toggleDemo()" title="기존 데이터를 보존하고 가상 계약정보로 기능을 체험합니다.">예시로 체험하기</button>
         <button class="btn btn-primary" onclick="triggerExcelInput()" title="기존 엑셀 계약현황표를 불러옵니다.">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           엑셀 불러오기
@@ -493,9 +522,7 @@ textarea.fc{resize:vertical;min-height:72px}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
           전체 초기화
         </button>
-        <a class="btn btn-subtle btn-github" href="https://github.com/sen-vip/annual-contract-board" target="_blank" rel="noopener noreferrer" title="사용법과 README를 새 창으로 엽니다.">
-          도움말
-        </a>
+        <button type="button" class="btn btn-subtle" id="helpBtn" onclick="openHelp()" aria-haspopup="dialog" aria-controls="helpDialog">도움말</button>
       </div>
     </div>
   </div>
@@ -509,6 +536,10 @@ textarea.fc{resize:vertical;min-height:72px}
 <!-- Main -->
 <div class="main">
 
+  <div class="demo-banner" id="demoBanner" role="status" hidden>
+    <div><strong>예시 체험 중</strong><p>가상의 계약정보입니다. 수정·완료 체크를 자유롭게 해보세요. 체험 중 변경한 내용은 저장되지 않으며, 종료하거나 새로고침하면 기존 데이터로 돌아갑니다.</p></div>
+    <button type="button" class="btn" onclick="toggleDemo()">체험 종료</button>
+  </div>
   <!-- Board Meta -->
   <div class="board-meta">
     <label for="schoolYear">학년도</label>
@@ -732,9 +763,24 @@ textarea.fc{resize:vertical;min-height:72px}
 </div><!-- /.main -->
 
 <footer class="app-footer">
-  made by <b>senvip</b> · 연간계약보드 v1.4
+  made by <b>senvip</b> · 연간계약보드 v1.5
   <div class="footer-help">서버 DB 저장 없음 · 데이터는 현재 브라우저에 저장됩니다. · 공개·비민감 업무정보만 입력해 주세요. · 엑셀은 업무용 현황 파일, 백업은 앱 상태 보관·복원용 파일입니다.</div>
 </footer>
+
+<!-- In-app help -->
+<dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle" onclick="if(event.target===this) this.close()">
+  <div class="modal-hdr"><h2 id="helpTitle">연간계약보드 도움말</h2><button type="button" class="modal-cls" onclick="document.getElementById('helpDialog').close()" aria-label="도움말 닫기" autofocus>✕</button></div>
+  <div class="help-body">
+    <p class="help-intro">계약기간과 이번 달 처리할 일을 정리하는 업무 보드입니다. 처음에는 예시로 기능을 둘러보고, 실제 계약정보를 추가해 보세요.</p>
+    <section><h3>1. 처음 시작하기</h3><ol><li><strong>예시로 체험하기</strong>를 누르면 가상의 계약으로 화면을 둘러볼 수 있습니다. 체험 종료 또는 새로고침 시 기존 데이터로 돌아오며, 체험 중 변경사항은 저장되지 않습니다.</li><li>실제 사용은 체험을 종료한 뒤 <strong>엑셀 불러오기</strong> 또는 <strong>계약 추가</strong>로 시작하세요. 처음 보이는 기본틀도 계약을 눌러 수정할 수 있습니다.</li><li>상단의 <strong>학년도</strong>를 입력하고, 계약별 구분·계약명·업체·시작일·종료일·금액 등을 정리하세요.</li></ol></section>
+    <section><h3>2. 이번 달 확인할 일 챙기기</h3><p><strong>한눈에 보기</strong>에서 전체 계약, 이번 달 지출, 방문·점검 진행상태와 90일 이내 종료 대상을 확인합니다. 연간 계약 흐름은 입력한 학년도의 1~12월 계약기간을 보여줍니다.</p><p><strong>이번 달 확인할 일</strong>의 지출·방문 버튼을 누르면 완료 상태를 바꿀 수 있습니다. 다시 누르면 완료를 취소합니다. 기록은 월별로 구분되어 다음 달에는 새로 확인합니다.</p><p>확인 대상은 계약을 수정할 때 <strong>지출 확인 / 방문·점검 확인</strong>에서 선택합니다. 자동이체 계약도 실제 처리 여부를 확인하고 체크하세요.</p></section>
+    <section><h3>3. 계약 찾기와 수정</h3><p><strong>계약 목록</strong>에서 계약명·업체명 등을 검색하고, 구분·증빙·만료상태 필터와 정렬을 사용하세요. 계약을 누르면 수정창이 열립니다. 변경 후 <strong>저장</strong>을 누르세요.</p><p><strong>보기 초기화</strong>는 검색·필터·정렬을 되돌립니다. <strong>전체 초기화</strong>는 저장된 계약과 완료기록을 삭제하므로, 필요한 자료는 먼저 백업하세요.</p></section>
+    <section><h3>4. 엑셀과 백업의 차이</h3><dl><dt>엑셀 불러오기 / 내보내기</dt><dd>업무용 계약현황표를 가져오거나 공유할 때 사용합니다. 기존 계약이 있으면 교체 또는 추가를 선택할 수 있습니다. 월간 확인 사용 여부와 현재 달 완료 상태도 내보냅니다.</dd><dt>백업 저장 / 불러오기</dt><dd>계약정보와 전체 월별 완료기록을 함께 보관·복원합니다. PC나 브라우저를 바꾸기 전 백업을 저장하고 새 환경에서 불러오세요. 백업 불러오기는 현재 데이터를 덮어씁니다.</dd></dl><p>예시 체험 중 내보내기·백업은 <strong>예시 데이터</strong> 파일로 내려받습니다.</p></section>
+    <section><h3>5. 저장과 알림 안내</h3><p>실제 데이터는 현재 브라우저에 자동 저장됩니다. 다른 PC·브라우저와 자동으로 동기화되지 않으며, 브라우저 데이터 삭제나 시크릿 창 종료 시 자료가 사라질 수 있으니 주기적으로 백업하세요.</p><p>앱을 열었을 때 확인할 항목을 보여줍니다. 앱을 닫은 상태의 자동 푸시 알림은 지원하지 않습니다. 필요한 항목은 일정 파일(.ics)로 내려받아 외부 캘린더에 등록할 수 있습니다.</p><p>공개·비민감 업무정보만 입력하세요. 계좌번호, 주민등록번호, 개인 연락처, 비밀번호, 비공개 견적정보 등은 입력하지 마세요.</p></section>
+    <section class="help-links"><h3>관련 링크</h3><a href="https://github.com/sen-vip/annual-contract-board" target="_blank" rel="noopener noreferrer">GitHub · 소스 코드와 README ↗</a></section>
+  </div>
+  <div class="modal-ftr"><button type="button" class="btn btn-primary" onclick="document.getElementById('helpDialog').close()">닫기</button></div>
+</dialog>
 
 <!-- Detail/Edit Modal -->
 <div class="ov" id="detailOv" onclick="ovClick(this,'detailOv')">
@@ -1007,6 +1053,8 @@ let gIsAdd = false;
 let confCb = null;
 let confAltCb = null;
 let gActiveTab = 'overview';
+let gDemoSnapshot = null;
+let gDataReadPending = false;
 
 // ================================================================
 // INIT
@@ -1056,8 +1104,90 @@ function loadStorage() {
 function saveStorage() {
   delete D.schoolName;
   D.lastUpdated = new Date().toISOString();
-  try { localStorage.setItem(SK, JSON.stringify(D)); } catch(e) { toast('저장 오류: ' + e.message, 'err'); }
+  try { if (!gDemoSnapshot) localStorage.setItem(SK, JSON.stringify(D)); } catch(e) { toast('저장 오류: ' + e.message, 'err'); }
   updLastUpd();
+}
+
+
+// Example data lives only in memory. All writes share the saveStorage guard.
+function buildDemoData() {
+  var data = cloneDefaultData();
+  var today = new Date();
+  var year = today.getFullYear();
+  var stamp = today.toISOString();
+  function dateAt(offset) {
+    var date = new Date(year, today.getMonth(), today.getDate() + offset);
+    return date.getFullYear() + '-' + pad2(date.getMonth()+1) + '-' + pad2(date.getDate());
+  }
+  data.schoolYear = year + '학년도';
+  data.lastUpdated = null;
+  var amounts = [180000,250000,120000,150000,200000,55000,90000];
+  data.contracts.forEach(function(c,i) {
+    c.id = 'demo-' + (i+1);
+    c.vendor = '예시업체 ' + (i+1);
+    c.contact = '';
+    c.monthlyAmount = String(amounts[i]);
+    c.contractAmount = c.periodType === '기간계약' ? String(amounts[i]*12) : '';
+    if (c.periodType === '기간계약') {
+      c.contractStartDate = dateAt(-150);
+      c.contractEndDate = dateAt(i === 0 ? 20 : i === 2 ? 55 : i === 4 ? 85 : 210);
+      c.originalPeriodText = buildPeriodText(c.periodType, c.contractStartDate, c.contractEndDate);
+    }
+    c.managementMemo = i === 0 ? '종료 전 재계약 조건 확인 (예시)' : i === 2 ? '이번 달 점검 일정 확인 (예시)' : '';
+    c.reminderDay = '15';
+    c.reminderNote = '증빙과 처리 여부 확인 (예시)';
+    c.monthlyCheckLog = {};
+    c.monthlyCheckLog[currentMonthKey()] = {payment:i===1 || i===5,visit:i===2};
+    c.createdAt = stamp;
+    c.updatedAt = stamp;
+  });
+  return data;
+}
+
+function toggleDemo() {
+  if (gDataReadPending) { toast('파일을 읽는 중입니다. 완료 후 체험 모드를 바꿔주세요.'); return; }
+  closeDetail();
+  closeConf();
+  if (!gDemoSnapshot) {
+    gDemoSnapshot = {data:D, filters:gFilters.slice(), search:gSearch, sortField:gSortField, sortDir:gSortDir, sortMode:gSortMode, tab:gActiveTab};
+    D = buildDemoData();
+    resetAll();
+    document.getElementById('schoolYear').value = D.schoolYear;
+    document.getElementById('demoBanner').hidden = false;
+    document.getElementById('demoBtn').textContent = '체험 종료';
+    updLastUpd();
+    renderAll();
+    switchTab('overview');
+    toast('예시 체험을 시작했습니다. 기존 데이터는 보존됩니다.', 'ok');
+  } else {
+    var snapshot = gDemoSnapshot;
+    D = snapshot.data;
+    gDemoSnapshot = null;
+    resetAll();
+    gFilters = snapshot.filters; gSearch = snapshot.search;
+    gSortField = snapshot.sortField; gSortDir = snapshot.sortDir; gSortMode = snapshot.sortMode;
+    document.getElementById('srchInp').value = gSearch;
+    document.getElementById('srchClr').classList.toggle('on', !!gSearch);
+    document.getElementById('sortSel').value = gSortMode === 'custom' ? 'default' : gSortMode;
+    if (gSortMode === 'custom') {
+      var fieldIdx = {category:0,name:1,vendor:2,contractEndDate:4,contractAmount:5,monthlyAmount:6,payDayText:7,evidenceType:8,memo:10,expireStatus:11};
+      var th = document.querySelectorAll('.ctbl th')[fieldIdx[gSortField]];
+      if (th) th.classList.add(gSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+    document.getElementById('schoolYear').value = D.schoolYear;
+    document.getElementById('demoBanner').hidden = true;
+    document.getElementById('demoBtn').textContent = '예시로 체험하기';
+    updateFilterButtons();
+    updLastUpd();
+    renderAll();
+    switchTab(snapshot.tab);
+    toast('체험을 종료하고 기존 데이터로 돌아왔습니다.', 'ok');
+  }
+}
+
+function openHelp() {
+  var dialog = document.getElementById('helpDialog');
+  if (!dialog.open) dialog.showModal();
 }
 
 function saveBoardInfo() {
@@ -1392,7 +1522,7 @@ function downloadIcsForContract(id) {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
-  a.download = (c.name || '연간계약보드') + '_월간알림.ics';
+  a.download = (gDemoSnapshot ? '예시_' : '') + (c.name || '연간계약보드') + '_월간알림.ics';
   a.click();
   URL.revokeObjectURL(url);
   toast('캘린더 일정 파일을 만들었습니다.', 'ok');
@@ -1451,8 +1581,10 @@ function handleExcel(ev) {
   if (!file) return;
   if (typeof XLSX === 'undefined') { toast('SheetJS를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.', 'err'); return; }
   ldg(true);
+  gDataReadPending = true;
   var reader = new FileReader();
   reader.onload = function(e) {
+    gDataReadPending = false;
     try {
       var wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
       var ws = wb.Sheets[wb.SheetNames[0]];
@@ -1464,7 +1596,7 @@ function handleExcel(ev) {
     }
     ev.target.value = '';
   };
-  reader.onerror = function() { toast('파일을 읽을 수 없습니다.', 'err'); ldg(false); };
+  reader.onerror = function() { gDataReadPending = false; toast('파일을 읽을 수 없습니다.', 'err'); ldg(false); };
   reader.readAsArrayBuffer(file);
 }
 
@@ -1638,7 +1770,7 @@ function exportExcel() {
 
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '연간계약현황');
-  var fn = '연간계약보드_' + (D.schoolYear||'') + '_' + fmtDateFile(new Date()) + '.xlsx';
+  var fn = '연간계약보드_' + (gDemoSnapshot ? '예시_' : '') + (D.schoolYear||'') + '_' + fmtDateFile(new Date()) + '.xlsx';
   XLSX.writeFile(wb, fn);
   toast('엑셀 파일을 저장했습니다. 계약기간 컬럼은 빼고 시작일/종료일만 내보냅니다.', 'ok');
 }
@@ -1652,7 +1784,7 @@ function doBackup() {
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
-  a.download = '연간계약보드_' + (D.schoolYear||'') + '_백업_' + fmtDateFile(new Date()) + '.bak';
+  a.download = '연간계약보드_' + (gDemoSnapshot ? '예시_' : '') + (D.schoolYear||'') + '_백업_' + fmtDateFile(new Date()) + '.bak';
   a.click();
   URL.revokeObjectURL(url);
   toast('백업 파일을 저장했습니다.', 'ok');
@@ -1667,11 +1799,13 @@ function handleRestore(ev) {
   if (!file) return;
   showConf({
     ico:'🔄', title:'백업 불러오기',
-    msg: '백업 파일로 복원하면 현재 데이터가 덮어쓰여집니다.\n계속하시겠습니까?',
+    msg: gDemoSnapshot ? '체험 중인 예시 화면에만 백업을 불러옵니다. 기존 데이터는 보존됩니다.\n계속하시겠습니까?' : '백업 파일로 복원하면 현재 데이터가 덮어쓰여집니다.\n계속하시겠습니까?',
     okTxt: '불러오기',
     onOk: function() {
+      gDataReadPending = true;
       var rd = new FileReader();
       rd.onload = function(e) {
+        gDataReadPending = false;
         try {
           var p = JSON.parse(e.target.result);
           if (!p.contracts || !Array.isArray(p.contracts)) { toast('유효하지 않은 백업 파일입니다.', 'err'); return; }
@@ -1683,6 +1817,7 @@ function handleRestore(ev) {
           toast(p.contracts.length + '건을 불러왔습니다.', 'ok');
         } catch(err) { toast('복원 오류: ' + err.message, 'err'); }
       };
+      rd.onerror = function() { gDataReadPending = false; toast('백업 파일을 읽을 수 없습니다.', 'err'); };
       rd.readAsText(file);
     }
   });
@@ -1695,7 +1830,7 @@ function handleRestore(ev) {
 function doReset() {
   showConf({
     ico:'⚠️', title:'전체 초기화',
-    msg: '이 브라우저에 저장된 연간계약 데이터와 메모를 모두 삭제합니다.\n계속할까요?',
+    msg: gDemoSnapshot ? '체험 중인 예시 데이터만 비웁니다. 기존 데이터는 보존됩니다.\n계속할까요?' : '이 브라우저에 저장된 연간계약 데이터와 메모를 모두 삭제합니다.\n계속할까요?',
     okTxt: '초기화',
     onOk: function() { D.contracts = []; saveStorage(); renderAll(); toast('데이터가 초기화되었습니다.', 'ok'); }
   });
